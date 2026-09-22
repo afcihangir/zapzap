@@ -4881,3 +4881,12 @@ msgstr "הושלם"
 
 msgid "This site"
 msgstr "אתר זה"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp רוצה להוריד קבצים מרובים."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "הרשאה להורדות מרובות של WhatsApp"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "נקה את ההחלטה השמורה לאשר או לחסום הורדות חוזרות של WhatsApp."
