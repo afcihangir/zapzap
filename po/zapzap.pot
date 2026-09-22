@@ -4467,3 +4467,12 @@ msgstr ""
 
 msgid "This site"
 msgstr ""
+
+msgid "WhatsApp wants to download multiple files."
+msgstr ""
+
+msgid "WhatsApp multiple-download permission"
+msgstr ""
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr ""
