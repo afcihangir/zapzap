@@ -4942,3 +4942,12 @@ msgstr "Tamamlandı"
 
 msgid "This site"
 msgstr "Bu site"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp birden fazla dosya indirmek istiyor."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "WhatsApp çoklu indirme izni"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Art arda WhatsApp indirmeleri için hatırlanan izin verme veya engelleme kararını temizle."
