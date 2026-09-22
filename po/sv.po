@@ -4884,3 +4884,34 @@ msgstr ""
 
 #~ msgid "Creating temporary directory:"
 #~ msgstr "Skapar temporär katalog:"
+
+
+msgid "No recent downloads"
+msgstr "Inga senaste nedladdningar"
+
+msgid "Clear download history"
+msgstr "Rensa nedladdningshistorik"
+
+msgid "Open downloads folder"
+msgstr "Öppna mappen Hämtade filer"
+
+msgid "Download behavior"
+msgstr "Nedladdningsbeteende"
+
+msgid "Choose what happens when a download starts."
+msgstr "Välj vad som händer när en nedladdning startar."
+
+msgid "Automatically open PDFs and images"
+msgstr "Öppna PDF-filer och bilder automatiskt"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Öppna slutförda PDF- och bildnedladdningar med systemets standardprogram."
+
+msgid "Show download window"
+msgstr "Visa nedladdningsfönster"
+
+msgid "Save automatically to selected folder"
+msgstr "Spara automatiskt i vald mapp"
+
+msgid "Ask where to save every time"
+msgstr "Fråga var filen ska sparas varje gång"
