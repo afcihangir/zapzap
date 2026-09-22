@@ -16,6 +16,7 @@ from zapzap import __downloadPage__
 from zapzap.features.alerts.alert_manager import AlertManager
 from zapzap.features.alerts.external_url import open_external_url
 from zapzap.features.browser.shell.browser_controller import BrowserController
+from zapzap.features.downloads.download_events import download_events
 from zapzap.features.downloads.ui.downloads_menu import DownloadsMenu
 from zapzap.features.settings.shell.settings_controller import SettingsController
 from zapzap.features.shortcuts.controller import ShortcutsController
@@ -43,6 +44,7 @@ class MainWindowController(MainWindowView):
             user_provider=user_provider,
         )
         self._downloads_menu = DownloadsMenu(self)
+        self._downloads_menu_generation = 0
         self.update_state = (
             update_state if update_state is not None else UpdateState(self)
         )
@@ -104,8 +106,13 @@ class MainWindowController(MainWindowView):
         self._setup_theme_menu()
         self._connect_menu_actions()
         self.btn_menubar_downloads.clicked.connect(
-            lambda: self.show_downloads_menu(self.btn_menubar_downloads)
+            lambda: self.show_downloads_menu(
+                self.btn_menubar_downloads,
+                auto_close=False,
+            )
         )
+        download_events.completed.connect(self._on_download_completed)
+        QTimer.singleShot(0, self.sync_menubar_downloads_button_size)
         self.settings_menubar()
         self.refresh_theme_menu()
         self.set_sidebar_visible(
@@ -201,6 +208,7 @@ class MainWindowController(MainWindowView):
         self.btn_menubar_downloads.setIcon(
             SystemIcon.get_icon("update_available", icon_theme)
         )
+        QTimer.singleShot(0, self.sync_menubar_downloads_button_size)
 
     def set_sidebar_visible(
         self,
@@ -223,8 +231,11 @@ class MainWindowController(MainWindowView):
             lambda: ShortcutsController(self).exec())
 
     # === Ações de Menu ===
-    def show_downloads_menu(self, anchor):
+    def show_downloads_menu(self, anchor, auto_close=False):
         """Show the shared recent-download menu next to its trigger."""
+        self._downloads_menu_generation += 1
+        generation = self._downloads_menu_generation
+
         self._downloads_menu.refresh()
         hint = self._downloads_menu.sizeHint()
 
@@ -235,6 +246,30 @@ class MainWindowController(MainWindowView):
             position = anchor.mapToGlobal(anchor.rect().topRight())
 
         self._downloads_menu.popup(position)
+
+        if auto_close:
+            QTimer.singleShot(
+                5000,
+                lambda: self._close_auto_downloads_menu(generation),
+            )
+
+    def _close_auto_downloads_menu(self, generation):
+        if (
+            generation == self._downloads_menu_generation
+            and self._downloads_menu.isVisible()
+        ):
+            self._downloads_menu.close()
+
+    def _on_download_completed(self, _path, auto_popup):
+        if not auto_popup or not self.isVisible():
+            return
+
+        anchor = (
+            self.btn_menubar_downloads
+            if self._appearance_settings.menubar_visible
+            else self.browser.btn_downloads
+        )
+        self.show_downloads_menu(anchor, auto_close=True)
 
     def new_chat(self):
         """Iniciar um novo chat na página atual."""
