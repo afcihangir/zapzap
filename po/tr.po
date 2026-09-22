@@ -4891,3 +4891,54 @@ msgstr "Seçilen klasöre otomatik kaydet"
 
 msgid "Ask where to save every time"
 msgstr "Her seferinde nereye kaydedileceğini sor"
+
+msgid "Multiple downloads"
+msgstr "Birden fazla indirme"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} birden fazla dosya indirmek istiyor."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Bu ek indirmelere izin vermek istiyor musunuz?"
+
+msgid "Allow once"
+msgstr "Bu sefer izin ver"
+
+msgid "Always allow"
+msgstr "Her zaman izin ver"
+
+msgid "Block"
+msgstr "Engelle"
+
+msgid "Automatic download site permissions"
+msgstr "Otomatik indirme site izinleri"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Birden fazla indirme isteyen siteler için hatırlanan izin verme veya engelleme kararlarını temizle."
+
+msgid "Pause"
+msgstr "Duraklat"
+
+msgid "Resume"
+msgstr "Devam et"
+
+msgid "Queued"
+msgstr "Sırada"
+
+msgid "Paused"
+msgstr "Duraklatıldı"
+
+msgid "Interrupted"
+msgstr "Kesildi"
+
+msgid "Cancelled"
+msgstr "İptal edildi"
+
+msgid "Blocked"
+msgstr "Engellendi"
+
+msgid "Completed"
+msgstr "Tamamlandı"
+
+msgid "This site"
+msgstr "Bu site"
