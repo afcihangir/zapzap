@@ -4932,3 +4932,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Einzelnen Prozess für GPU und Rendering aktivieren"
+
+
+msgid "No recent downloads"
+msgstr "Keine kürzlich heruntergeladenen Dateien"
+
+msgid "Clear download history"
+msgstr "Downloadverlauf löschen"
+
+msgid "Open downloads folder"
+msgstr "Download-Ordner öffnen"
+
+msgid "Download behavior"
+msgstr "Download-Verhalten"
+
+msgid "Choose what happens when a download starts."
+msgstr "Wählen Sie, was beim Start eines Downloads geschieht."
+
+msgid "Automatically open PDFs and images"
+msgstr "PDFs und Bilder automatisch öffnen"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Abgeschlossene PDF- und Bild-Downloads mit der Standardanwendung des Systems öffnen."
+
+msgid "Show download window"
+msgstr "Downloadfenster anzeigen"
+
+msgid "Save automatically to selected folder"
+msgstr "Automatisch im ausgewählten Ordner speichern"
+
+msgid "Ask where to save every time"
+msgstr "Jedes Mal nach dem Speicherort fragen"
