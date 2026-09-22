@@ -3,6 +3,7 @@
 from zapzap.features.startup.autostart_manager import AutostartManager
 from zapzap.features.dictionaries.dictionaries_manager import DictionariesManager
 from zapzap.features.downloads.download_manager import DownloadManager
+from zapzap.core.config.settings.downloads import DownloadSettings
 from zapzap.core.config.settings.spellcheck import SpellcheckSettings
 from zapzap.core.config.settings.system import SystemSettings
 from zapzap.core.environment.setup_manager import SetupManager
@@ -18,6 +19,7 @@ class LanguageDownloadSettingsModel:
     def __init__(self):
         self._spellcheck_settings = SpellcheckSettings()
         self._system_settings = SystemSettings()
+        self._download_settings = DownloadSettings()
 
     @property
     def spellcheck_enabled(self):
@@ -47,6 +49,22 @@ class LanguageDownloadSettingsModel:
 
     def restore_dictionary_path(self):
         return DictionariesManager.restore_default_path()
+
+    @property
+    def download_behavior(self):
+        return self._download_settings.behavior
+
+    @download_behavior.setter
+    def download_behavior(self, value):
+        self._download_settings.behavior = value
+
+    @property
+    def auto_open_media(self):
+        return self._download_settings.auto_open_media
+
+    @auto_open_media.setter
+    def auto_open_media(self, value):
+        self._download_settings.auto_open_media = value
 
     def get_download_path(self):
         return DownloadManager.get_path()
