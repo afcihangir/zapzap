@@ -240,7 +240,7 @@ class DownloadRow(QWidget):
             else Qt.CursorShape.ArrowCursor
         )
 
-        show_progress = status in {"active", "paused"}
+        show_progress = status == "active"
         self.progress_row.setVisible(show_progress)
         self.status_row.setVisible(not show_progress)
 
