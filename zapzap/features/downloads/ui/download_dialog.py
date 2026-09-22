@@ -13,7 +13,9 @@ from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 from gettext import gettext as _
 import os
 
+from zapzap.core.config.settings.downloads import DownloadSettings
 from zapzap.core.config.settings_manager import SettingsManager
+from zapzap.features.downloads.download_manager import DownloadManager
 from zapzap.ui.primitives.button import Button
 from zapzap.ui.primitives.label import Label
 from zapzap.features.downloads.download_naming_service import DownloadNamingService
@@ -240,7 +242,15 @@ class DownloadDialog(QDialog):
                 )
 
         try:
-            self.download.stateChanged.connect(open_when_done)
+            auto_open_handles_file = (
+                DownloadSettings().auto_open_media
+                and DownloadManager.supports_auto_open(
+                    self.initial_mime_type,
+                    self.initial_file_name,
+                )
+            )
+            if not auto_open_handles_file:
+                self.download.stateChanged.connect(open_when_done)
             self.download.accept()
             self.accept()
         except RuntimeError:
