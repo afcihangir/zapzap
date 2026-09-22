@@ -82,7 +82,7 @@ class DownloadManager:
 
         settings = DownloadSettings()
         behavior = settings.behavior
-        auto_popup = behavior != DownloadBehavior.DIALOG
+        direct_mode = behavior != DownloadBehavior.DIALOG
 
         def handle_state(state):
             terminal_states = {
@@ -105,7 +105,9 @@ class DownloadManager:
                         )
                     ):
                         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
-                    download_events.completed.emit(path, auto_popup)
+                    DownloadManager._release_download(download, None)
+                    download_events.completed.emit(path)
+                    return
 
             if state in terminal_states:
                 DownloadManager._release_download(download, None)
@@ -114,12 +116,18 @@ class DownloadManager:
         DownloadManager._active_downloads.append(download)
 
         if behavior == DownloadBehavior.AUTOMATIC:
-            DownloadManager._accept_download(download)
+            if DownloadManager._accept_download(download) and direct_mode:
+                download_events.started.emit(
+                    DownloadManager._download_path(download)
+                )
             return
 
         if behavior == DownloadBehavior.ASK_EVERY_TIME:
             if DownloadManager._choose_download_target(download, parent):
-                DownloadManager._accept_download(download)
+                if DownloadManager._accept_download(download) and direct_mode:
+                    download_events.started.emit(
+                        DownloadManager._download_path(download)
+                    )
             else:
                 DownloadManager._cancel_download(download)
             return
@@ -136,9 +144,11 @@ class DownloadManager:
     def _accept_download(download):
         try:
             download.accept()
+            return True
         except RuntimeError:
             logger.exception("Download could not be started")
             DownloadManager._cancel_download(download)
+            return False
 
     @staticmethod
     def _cancel_download(download):
@@ -186,6 +196,26 @@ class DownloadManager:
             recent[:DownloadManager.MAX_RECENT_DOWNLOADS],
         )
         return path
+
+    @staticmethod
+    def _download_path(download):
+        try:
+            directory = download.downloadDirectory()
+            file_name = download.downloadFileName()
+        except RuntimeError:
+            return ""
+        if not directory or not file_name:
+            return ""
+        return os.path.normpath(os.path.join(directory, file_name))
+
+    @staticmethod
+    def active_downloads():
+        paths = []
+        for download in tuple(DownloadManager._active_downloads):
+            path = DownloadManager._download_path(download)
+            if path and path not in paths:
+                paths.append(path)
+        return paths
 
     @staticmethod
     def recent_downloads():
