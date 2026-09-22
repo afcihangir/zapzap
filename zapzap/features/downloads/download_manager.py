@@ -117,17 +117,17 @@ class DownloadManager:
 
         if behavior == DownloadBehavior.AUTOMATIC:
             if DownloadManager._accept_download(download) and direct_mode:
-                download_events.started.emit(
-                    DownloadManager._download_path(download)
-                )
+                path = DownloadManager._download_path(download)
+                if path:
+                    download_events.started.emit(path)
             return
 
         if behavior == DownloadBehavior.ASK_EVERY_TIME:
             if DownloadManager._choose_download_target(download, parent):
                 if DownloadManager._accept_download(download) and direct_mode:
-                    download_events.started.emit(
-                        DownloadManager._download_path(download)
-                    )
+                    path = DownloadManager._download_path(download)
+                    if path:
+                        download_events.started.emit(path)
             else:
                 DownloadManager._cancel_download(download)
             return
