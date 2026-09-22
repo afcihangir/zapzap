@@ -8,6 +8,7 @@ class DownloadEvents(QObject):
 
     started = pyqtSignal(str)
     completed = pyqtSignal(str)
+    progress_changed = pyqtSignal()
 
 
 download_events = DownloadEvents()
