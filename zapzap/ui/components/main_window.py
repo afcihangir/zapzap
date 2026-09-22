@@ -4,11 +4,13 @@ from gettext import gettext as _
 
 from PyQt6.QtGui import QAction
 from PyQt6.QtGui import QFont
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QMenu
 from PyQt6.QtWidgets import QMenuBar
 from PyQt6.QtWidgets import QStackedWidget
+from PyQt6.QtWidgets import QToolButton
 from PyQt6.QtWidgets import QWidget
 
 
@@ -52,6 +54,20 @@ class MainWindowView(QMainWindow):
         self.menuUsers.setObjectName("menuUsers")
         self.menuHelp = QMenu(self.menubar)
         self.menuHelp.setObjectName("menuHelp")
+
+        self.btn_menubar_downloads = QToolButton(self.menubar)
+        self.btn_menubar_downloads.setObjectName("btn_menubar_downloads")
+        self.btn_menubar_downloads.setAutoRaise(True)
+        self.btn_menubar_downloads.setCursor(
+            Qt.CursorShape.PointingHandCursor
+        )
+        self.btn_menubar_downloads.setToolTip(_("Downloads"))
+        self.btn_menubar_downloads.setAccessibleName(_("Downloads"))
+        self.menubar.setCornerWidget(
+            self.btn_menubar_downloads,
+            Qt.Corner.TopRightCorner,
+        )
+
         self.setMenuBar(self.menubar)
 
         self._create_actions()
