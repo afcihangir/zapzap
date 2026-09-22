@@ -6,6 +6,9 @@ from gettext import gettext as _
 
 from PyQt6.QtCore import QSize, Qt, QUrl, pyqtSignal
 from PyQt6.QtGui import QDesktopServices
+
+from zapzap.assets.icons.system_icon import SystemIcon
+from zapzap.core.theme.theme_manager import ThemeManager
 from PyQt6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -119,6 +122,10 @@ class DownloadsMenu(QMenu):
 
         clear_action = self.addAction(_("Clear download history"))
         clear_action.setEnabled(bool(recent))
+        icon_theme = SystemIcon.Type[
+            ThemeManager.get_current_color_scheme().name
+        ]
+        clear_action.setIcon(SystemIcon.get_icon("trash", icon_theme))
         clear_action.triggered.connect(self._clear_history)
 
         open_folder_action = self.addAction(_("Open downloads folder"))
