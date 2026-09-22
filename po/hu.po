@@ -4907,3 +4907,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Grafikus kártya és megjelenítés egy folyamatban bekacsolása"
+
+
+msgid "No recent downloads"
+msgstr "Nincsenek legutóbbi letöltések"
+
+msgid "Clear download history"
+msgstr "Letöltési előzmények törlése"
+
+msgid "Open downloads folder"
+msgstr "Letöltések mappa megnyitása"
+
+msgid "Download behavior"
+msgstr "Letöltési viselkedés"
+
+msgid "Choose what happens when a download starts."
+msgstr "Válassza ki, mi történjen egy letöltés indításakor."
+
+msgid "Automatically open PDFs and images"
+msgstr "PDF-ek és képek automatikus megnyitása"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "A befejezett PDF- és képletöltések megnyitása a rendszer alapértelmezett alkalmazásával."
+
+msgid "Show download window"
+msgstr "Letöltési ablak megjelenítése"
+
+msgid "Save automatically to selected folder"
+msgstr "Automatikus mentés a kiválasztott mappába"
+
+msgid "Ask where to save every time"
+msgstr "Minden alkalommal kérdezze meg a mentési helyet"
