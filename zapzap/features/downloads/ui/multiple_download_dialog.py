@@ -1,4 +1,4 @@
-"""Chrome-like protection for repeated automatic download requests."""
+"""Chrome-like protection for repeated WhatsApp downloads."""
 
 from gettext import gettext as _
 
@@ -12,16 +12,14 @@ class MultipleDownloadDecision:
 
 
 class MultipleDownloadDialog:
-    """Ask before a site starts repeated downloads."""
+    """Ask before WhatsApp starts repeated downloads."""
 
     @staticmethod
-    def ask(site: str, parent=None) -> str:
+    def ask(parent=None) -> str:
         message = QMessageBox(parent)
         message.setIcon(QMessageBox.Icon.Question)
         message.setWindowTitle(_("Multiple downloads"))
-        message.setText(
-            _("{site} wants to download multiple files.").format(site=site)
-        )
+        message.setText(_("WhatsApp wants to download multiple files."))
         message.setInformativeText(
             _("Do you want to allow these additional downloads?")
         )
