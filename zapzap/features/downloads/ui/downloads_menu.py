@@ -225,6 +225,9 @@ class DownloadRow(QWidget):
         self.file_icon.setPixmap(icon.pixmap(QSize(30, 30)))
 
         self.name_button.setText(name)
+        name_font = self.name_button.font()
+        name_font.setStrikeOut(status in {"cancelled", "blocked"})
+        self.name_button.setFont(name_font)
         self.name_button.setToolTip(self.path or name)
         self.name_button.setCursor(
             Qt.CursorShape.PointingHandCursor
