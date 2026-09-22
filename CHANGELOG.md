@@ -15,6 +15,14 @@ releases and the AppStream metadata.
 
 ### Added
 
+- Added shared recent-download menus to the sidebar and right side of the
+  menubar, including file opening, per-item folder access, history clearing,
+  the downloads-folder shortcut, localized labels, and a five-second automatic
+  popup after direct downloads.
+- Added download behavior preferences for preserving the existing confirmation
+  dialog, saving directly to the selected folder, or asking for a destination
+  every time, plus optional automatic opening of completed PDF and image files
+  with the system default application.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
