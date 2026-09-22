@@ -66,6 +66,9 @@ class LanguageDownloadSettingsModel:
     def auto_open_media(self, value):
         self._download_settings.auto_open_media = value
 
+    def clear_multiple_download_permissions(self):
+        self._download_settings.clear_multiple_download_permissions()
+
     def get_download_path(self):
         return DownloadManager.get_path()
 
