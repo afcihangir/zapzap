@@ -4790,3 +4790,34 @@ msgstr ""
 
 #~ msgid "Reduce WebRTC IP exposure."
 #~ msgstr "Réduisez l’exposition IP WebRTC."
+
+
+msgid "No recent downloads"
+msgstr "Aucun téléchargement récent"
+
+msgid "Clear download history"
+msgstr "Effacer l'historique des téléchargements"
+
+msgid "Open downloads folder"
+msgstr "Ouvrir le dossier Téléchargements"
+
+msgid "Download behavior"
+msgstr "Comportement des téléchargements"
+
+msgid "Choose what happens when a download starts."
+msgstr "Choisissez ce qui se passe lorsqu'un téléchargement démarre."
+
+msgid "Automatically open PDFs and images"
+msgstr "Ouvrir automatiquement les PDF et les images"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Ouvrir les téléchargements PDF et image terminés avec l'application par défaut du système."
+
+msgid "Show download window"
+msgstr "Afficher la fenêtre de téléchargement"
+
+msgid "Save automatically to selected folder"
+msgstr "Enregistrer automatiquement dans le dossier sélectionné"
+
+msgid "Ask where to save every time"
+msgstr "Demander où enregistrer à chaque fois"
