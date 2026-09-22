@@ -5117,3 +5117,12 @@ msgstr "Concluído"
 
 msgid "This site"
 msgstr "Este site"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "O WhatsApp pretende transferir vários ficheiros."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Permissão para várias transferências do WhatsApp"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Limpar a decisão memorizada de permitir ou bloquear transferências repetidas do WhatsApp."
