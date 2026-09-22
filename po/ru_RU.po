@@ -4892,3 +4892,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Включите единый процесс для GPU и рендеринга"
+
+
+msgid "No recent downloads"
+msgstr "Нет недавних загрузок"
+
+msgid "Clear download history"
+msgstr "Очистить историю загрузок"
+
+msgid "Open downloads folder"
+msgstr "Открыть папку загрузок"
+
+msgid "Download behavior"
+msgstr "Поведение загрузок"
+
+msgid "Choose what happens when a download starts."
+msgstr "Выберите, что происходит при начале загрузки."
+
+msgid "Automatically open PDFs and images"
+msgstr "Автоматически открывать PDF и изображения"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Открывать завершённые загрузки PDF и изображений в приложении системы по умолчанию."
+
+msgid "Show download window"
+msgstr "Показывать окно загрузки"
+
+msgid "Save automatically to selected folder"
+msgstr "Автоматически сохранять в выбранную папку"
+
+msgid "Ask where to save every time"
+msgstr "Каждый раз спрашивать, куда сохранить"
