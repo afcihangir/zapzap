@@ -4887,3 +4887,54 @@ msgstr "Automatski sačuvaj u odabranu mapu"
 
 msgid "Ask where to save every time"
 msgstr "Pitaj gdje sačuvati svaki put"
+
+msgid "Multiple downloads"
+msgstr "Višestruka preuzimanja"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} želi preuzeti više datoteka."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Želite li dozvoliti ova dodatna preuzimanja?"
+
+msgid "Allow once"
+msgstr "Dozvoli jednom"
+
+msgid "Always allow"
+msgstr "Uvijek dozvoli"
+
+msgid "Block"
+msgstr "Blokiraj"
+
+msgid "Automatic download site permissions"
+msgstr "Dozvole za automatska preuzimanja sa stranica"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Obriši zapamćene odluke dozvole ili blokiranja za stranice koje traže više preuzimanja."
+
+msgid "Pause"
+msgstr "Pauziraj"
+
+msgid "Resume"
+msgstr "Nastavi"
+
+msgid "Queued"
+msgstr "Na čekanju"
+
+msgid "Paused"
+msgstr "Pauzirano"
+
+msgid "Interrupted"
+msgstr "Prekinuto"
+
+msgid "Cancelled"
+msgstr "Otkazano"
+
+msgid "Blocked"
+msgstr "Blokirano"
+
+msgid "Completed"
+msgstr "Završeno"
+
+msgid "This site"
+msgstr "Ova stranica"
