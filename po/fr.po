@@ -4821,3 +4821,54 @@ msgstr "Enregistrer automatiquement dans le dossier sélectionné"
 
 msgid "Ask where to save every time"
 msgstr "Demander où enregistrer à chaque fois"
+
+msgid "Multiple downloads"
+msgstr "Téléchargements multiples"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} souhaite télécharger plusieurs fichiers."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Voulez-vous autoriser ces téléchargements supplémentaires ?"
+
+msgid "Allow once"
+msgstr "Autoriser une fois"
+
+msgid "Always allow"
+msgstr "Toujours autoriser"
+
+msgid "Block"
+msgstr "Bloquer"
+
+msgid "Automatic download site permissions"
+msgstr "Autorisations de téléchargement automatique des sites"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Effacer les décisions mémorisées d’autorisation ou de blocage pour les sites demandant plusieurs téléchargements."
+
+msgid "Pause"
+msgstr "Mettre en pause"
+
+msgid "Resume"
+msgstr "Reprendre"
+
+msgid "Queued"
+msgstr "En attente"
+
+msgid "Paused"
+msgstr "En pause"
+
+msgid "Interrupted"
+msgstr "Interrompu"
+
+msgid "Cancelled"
+msgstr "Annulé"
+
+msgid "Blocked"
+msgstr "Bloqué"
+
+msgid "Completed"
+msgstr "Terminé"
+
+msgid "This site"
+msgstr "Ce site"
