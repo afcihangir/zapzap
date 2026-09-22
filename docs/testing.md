@@ -87,6 +87,7 @@ documente o que ele protege.
 | `test_dictionary_manager.py` | store próprio, migração, catálogo/cache, rede segura, downloads atômicos, importação/remoção, diálogo compartilhado, provisionamento único do idioma do sistema e ausência de dicionários nos pacotes oficiais |
 | `test_dictionary_options.py` | descoberta dinâmica, nomes amigáveis, ordenação, redimensionamento e fallback de dicionários personalizados |
 | `test_display_backend.py` | seleção automática/forçada do backend Qt, precedência de ambiente/CLI/plataforma e migração da chave Wayland legada |
+| `test_download_settings.py` | modos persistidos de download, fallback seguro e abertura automática limitada a PDF/imagens |
 | `test_documentation_structure.py` | camadas de UI, ciclo numérico versionado do changelog e sincronização entre árvore, inventários técnicos, convenção de commits e guia para agentes |
 | `test_donations_page.py` | URLs HTTPS oficiais, fallback externo, cartões responsivos/acessíveis, troca imediata de idioma e rota única pela sidebar, Configurações e Sobre |
 | `test_external_link_lifecycle.py` | classificação interna/externa de pop-ups, profile compartilhado, entrega única ao navegador e cleanup no fechamento/shutdown |
@@ -137,6 +138,7 @@ documente o que ele protege.
 - `test_dictionary_manager.py`
 - `test_dictionary_options.py`
 - `test_display_backend.py`
+- `test_download_settings.py`
 - `test_documentation_structure.py`
 - `test_donations_page.py`
 - `test_external_link_lifecycle.py`
@@ -185,6 +187,28 @@ documente o que ele protege.
 6. Em backends de sistema, use fakes nas fronteiras D-Bus/Qt e mantenha pelo
    menos um roteiro manual em sessão real quando necessário.
 7. Atualize este inventário no mesmo commit.
+
+## Validação manual de downloads
+
+Use arquivos de teste sem dados sensíveis e valide cada modo em uma sessão
+gráfica real.
+
+1. Em **Indirme davranışı**, mantenha o modo de janela e confirme que o diálogo
+   Salvar/Abrir/Mais continua sendo exibido.
+2. Selecione o modo automático, baixe um arquivo e confirme que ele vai para a
+   pasta configurada sem diálogo; ao concluir, o menu de downloads deve abrir e
+   fechar sozinho após cinco segundos.
+3. Abra o menu manualmente pelos botões da barra lateral e da barra de menus e
+   confirme que ele não fecha por temporizador, mas fecha ao clicar fora.
+4. Selecione **perguntar sempre**, faça um download e confirme que o seletor de
+   arquivo aparece para cada download e que cancelar não inicia a transferência.
+5. Ative a abertura automática e confirme PDFs e imagens no aplicativo padrão
+   do sistema; ZIP, texto e outros tipos não devem ser abertos automaticamente.
+6. Em cada item do histórico, clique no nome para abrir o arquivo e use o ícone
+   de pasta exibido no hover para abrir a pasta. Valide também limpar histórico
+   e abrir a pasta de downloads.
+7. Troque o idioma da interface e confirme a tradução do menu e dos novos
+   controles de download.
 
 ## Validação manual do proxy estrito
 
