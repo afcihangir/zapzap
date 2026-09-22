@@ -17,7 +17,6 @@ from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.features.downloads.download_manager import DownloadManager
 from zapzap.ui.primitives.button import Button
 from zapzap.ui.primitives.label import Label
-from zapzap.features.downloads.download_naming_service import DownloadNamingService
 
 
 class DownloadDialog(QDialog):
@@ -284,28 +283,21 @@ class DownloadDialog(QDialog):
         if not path:
             return
 
-        normalized_file_name = DownloadNamingService.normalized_file_name(
-            os.path.basename(path),
-            self.initial_mime_type,
-            self.initial_url
-        )
-
         if not self._is_download_available():
             self._close_unavailable_download()
             return
 
         try:
-            self.download.setDownloadDirectory(
-                os.path.dirname(path)
+            DownloadManager.set_download_target(
+                self.download,
+                os.path.dirname(path),
+                os.path.basename(path),
+                self.initial_mime_type,
+                self.initial_url,
             )
-
-            self.download.setDownloadFileName(
-                normalized_file_name
-            )
-
             DownloadManager.start_or_queue(self.download)
             self.accept()
-        except RuntimeError:
+        except (RuntimeError, ValueError):
             self._close_unavailable_download()
 
     def _cancel(self):
