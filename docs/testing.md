@@ -196,18 +196,23 @@ gráfica real.
 1. Em **İndirme davranışı**, mantenha o modo de janela e confirme que o diálogo
    Salvar/Abrir/Mais continua sendo exibido.
 2. Selecione o modo automático, baixe um arquivo e confirme que ele vai para a
-   pasta configurada sem diálogo; ao concluir, o menu de downloads deve abrir e
+   pasta configurada sem diálogo; ao iniciar, o menu de downloads deve abrir e
    fechar sozinho após cinco segundos.
-3. Abra o menu manualmente pelos botões da barra lateral e da barra de menus e
+3. Durante um download, confirme que os dois botões de downloads reduzem o
+   ícone e exibem a porcentagem no canto inferior direito. Com dois downloads
+   de tamanhos diferentes, confirme que a porcentagem é ponderada pelo total de
+   bytes e não pela quantidade de arquivos. Ao terminar a fila ativa, confirme
+   o breve efeito de conclusão e o retorno do ícone ao tamanho normal.
+4. Abra o menu manualmente pelos botões da barra lateral e da barra de menus e
    confirme que ele não fecha por temporizador, mas fecha ao clicar fora.
-4. Selecione **perguntar sempre**, faça um download e confirme que o seletor de
+5. Selecione **perguntar sempre**, faça um download e confirme que o seletor de
    arquivo aparece para cada download e que cancelar não inicia a transferência.
-5. Ative a abertura automática e confirme PDFs e imagens no aplicativo padrão
+6. Ative a abertura automática e confirme PDFs e imagens no aplicativo padrão
    do sistema; ZIP, texto e outros tipos não devem ser abertos automaticamente.
-6. Em cada item do histórico, clique no nome para abrir o arquivo e use o ícone
+7. Em cada item do histórico, clique no nome para abrir o arquivo e use o ícone
    de pasta exibido no hover para abrir a pasta. Valide também limpar histórico
    e abrir a pasta de downloads.
-7. Troque o idioma da interface e confirme a tradução do menu e dos novos
+8. Troque o idioma da interface e confirme a tradução do menu e dos novos
    controles de download.
 
 ## Validação manual do proxy estrito
