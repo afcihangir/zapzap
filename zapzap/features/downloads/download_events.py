@@ -6,7 +6,8 @@ from PyQt6.QtCore import QObject, pyqtSignal
 class DownloadEvents(QObject):
     """Application-local download lifecycle events."""
 
-    completed = pyqtSignal(str, bool)
+    started = pyqtSignal(str)
+    completed = pyqtSignal(str)
 
 
 download_events = DownloadEvents()
