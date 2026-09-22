@@ -46,15 +46,6 @@ class LanguageDownloadSettingsView(SettingsPage):
         self.interface_language_comboBox.setMinimumContentsLength(18)
         card.add_row(row)
 
-        self.auto_open_media_row = SettingsSwitchRow(
-            _("Automatically open PDFs and images"),
-            _(
-                "Open completed PDF and image downloads with the system "
-                "default application."
-            ),
-        )
-        card.add_row(self.auto_open_media_row)
-
         section.add_card(card)
         self.add_section(section)
 
@@ -86,6 +77,16 @@ class LanguageDownloadSettingsView(SettingsPage):
             _("Restore"), variant=Button.WARNING)
         row.control.layout().addWidget(self.btn_restore_path_download)
         card.add_row(row)
+
+        self.auto_open_media_row = SettingsSwitchRow(
+            _("Automatically open PDFs and images"),
+            _(
+                "Open completed PDF and image downloads with the system "
+                "default application."
+            ),
+        )
+        card.add_row(self.auto_open_media_row)
+
         section.add_card(card)
         self.add_section(section)
 
