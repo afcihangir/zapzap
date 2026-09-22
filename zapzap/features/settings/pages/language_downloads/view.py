@@ -88,7 +88,7 @@ class LanguageDownloadSettingsView(SettingsPage):
         card.add_row(self.auto_open_media_row)
 
         self.reset_download_permissions_row = SettingsActionRow(
-            _("Automatic download site permissions"),
+            _("WhatsApp multiple-download permission"),
             _(
                 "Clear remembered allow or block decisions for sites that "
                 "request multiple downloads."
