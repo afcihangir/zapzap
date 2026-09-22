@@ -4847,3 +4847,54 @@ msgstr "الحفظ تلقائيًا في المجلد المحدد"
 
 msgid "Ask where to save every time"
 msgstr "السؤال عن مكان الحفظ في كل مرة"
+
+msgid "Multiple downloads"
+msgstr "تنزيلات متعددة"
+
+msgid "{site} wants to download multiple files."
+msgstr "يريد {site} تنزيل ملفات متعددة."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "هل تريد السماح بهذه التنزيلات الإضافية؟"
+
+msgid "Allow once"
+msgstr "السماح مرة واحدة"
+
+msgid "Always allow"
+msgstr "السماح دائمًا"
+
+msgid "Block"
+msgstr "حظر"
+
+msgid "Automatic download site permissions"
+msgstr "أذونات التنزيل التلقائي للمواقع"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "مسح قرارات السماح أو الحظر المحفوظة للمواقع التي تطلب تنزيلات متعددة."
+
+msgid "Pause"
+msgstr "إيقاف مؤقت"
+
+msgid "Resume"
+msgstr "استئناف"
+
+msgid "Queued"
+msgstr "في قائمة الانتظار"
+
+msgid "Paused"
+msgstr "متوقف مؤقتًا"
+
+msgid "Interrupted"
+msgstr "انقطع"
+
+msgid "Cancelled"
+msgstr "أُلغي"
+
+msgid "Blocked"
+msgstr "محظور"
+
+msgid "Completed"
+msgstr "اكتمل"
+
+msgid "This site"
+msgstr "هذا الموقع"
