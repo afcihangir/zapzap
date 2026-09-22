@@ -4830,3 +4830,54 @@ msgstr "שמור אוטומטית בתיקייה שנבחרה"
 
 msgid "Ask where to save every time"
 msgstr "שאל היכן לשמור בכל פעם"
+
+msgid "Multiple downloads"
+msgstr "הורדות מרובות"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} רוצה להוריד קבצים מרובים."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "האם לאפשר את ההורדות הנוספות האלה?"
+
+msgid "Allow once"
+msgstr "אפשר פעם אחת"
+
+msgid "Always allow"
+msgstr "אפשר תמיד"
+
+msgid "Block"
+msgstr "חסום"
+
+msgid "Automatic download site permissions"
+msgstr "הרשאות אתר להורדות אוטומטיות"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "נקה החלטות שמורות של אישור או חסימה לאתרים שמבקשים הורדות מרובות."
+
+msgid "Pause"
+msgstr "השהה"
+
+msgid "Resume"
+msgstr "המשך"
+
+msgid "Queued"
+msgstr "בתור"
+
+msgid "Paused"
+msgstr "מושהה"
+
+msgid "Interrupted"
+msgstr "הופסק"
+
+msgid "Cancelled"
+msgstr "בוטל"
+
+msgid "Blocked"
+msgstr "נחסם"
+
+msgid "Completed"
+msgstr "הושלם"
+
+msgid "This site"
+msgstr "אתר זה"
