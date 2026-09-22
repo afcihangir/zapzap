@@ -23,15 +23,19 @@ releases and the AppStream metadata.
   popup after direct downloads. While downloads are active, both download
   buttons show a byte-weighted aggregate percentage with a reduced icon and
   play a short completion animation when the active queue finishes.
-- Added Chrome-style repeated-download protection for WhatsApp: the first
-  request proceeds normally, rapid additional requests use one shared
-  ask/allow/block permission, remembered decisions can be reset in Settings,
-  and a global cap of six active WhatsApp downloads queues excess requests.
-  Paused transfers do not occupy an active slot.
+- Added Chrome-style repeated-download protection for WhatsApp: only the first
+  download request in an application session is implicitly allowed; every
+  later request requires the shared ask/allow/block permission, so spacing
+  automated requests apart cannot bypass the prompt. Remembered decisions can
+  be reset in Settings, and a global cap of six active WhatsApp downloads
+  queues excess requests. Paused transfers do not occupy an active slot.
 - Added download behavior preferences for preserving the existing confirmation
   dialog, saving directly to the selected folder, or asking for a destination
-  every time, plus optional automatic opening of completed PDF and image files
-  with the system default application.
+  every time, plus optional automatic opening of completed PDF and raster-image
+  files with the system default application. Auto-open remains disabled by
+  default and requires verified file content, a compatible safe extension and
+  no conflicting server MIME type. Download names and final target paths are
+  sanitized/canonicalized to prevent directory traversal and symlink escape.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
