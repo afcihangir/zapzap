@@ -16,11 +16,18 @@ releases and the AppStream metadata.
 ### Added
 
 - Added shared recent-download menus to the sidebar and right side of the
-  menubar, including file opening, per-item folder access, history clearing,
-  the downloads-folder shortcut, localized labels, and a five-second automatic
+  menubar, including native file-type icons, per-item progress bars and
+  percentages, queued/paused/interrupted/cancelled/blocked/completed states,
+  pause/resume/cancel controls, per-item folder access, history clearing, the
+  downloads-folder shortcut, localized labels, and a five-second automatic
   popup after direct downloads. While downloads are active, both download
   buttons show a byte-weighted aggregate percentage with a reduced icon and
   play a short completion animation when the active queue finishes.
+- Added Chrome-style repeated-download protection: the first request from a
+  site proceeds normally, rapid additional requests use an ask/allow/block
+  site permission, remembered decisions can be reset in Settings, and a
+  Chromium-aligned cap of six active downloads per origin queues excess
+  requests without imposing an arbitrary cross-origin global limit.
 - Added download behavior preferences for preserving the existing confirmation
   dialog, saving directly to the selected folder, or asking for a destination
   every time, plus optional automatic opening of completed PDF and image files
