@@ -5014,3 +5014,12 @@ msgstr "Abgeschlossen"
 
 msgid "This site"
 msgstr "Diese Website"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp möchte mehrere Dateien herunterladen."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Berechtigung für mehrere WhatsApp-Downloads"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Gespeicherte Zulassungs- oder Blockierungsentscheidung für wiederholte WhatsApp-Downloads löschen."
