@@ -4883,3 +4883,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Eén proces gebruiken voor gpu en vensteropmaak"
+
+
+msgid "No recent downloads"
+msgstr "Geen recente downloads"
+
+msgid "Clear download history"
+msgstr "Downloadgeschiedenis wissen"
+
+msgid "Open downloads folder"
+msgstr "Downloadmap openen"
+
+msgid "Download behavior"
+msgstr "Downloadgedrag"
+
+msgid "Choose what happens when a download starts."
+msgstr "Kies wat er gebeurt wanneer een download start."
+
+msgid "Automatically open PDFs and images"
+msgstr "PDF's en afbeeldingen automatisch openen"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Voltooide PDF- en afbeeldingsdownloads openen met de standaardtoepassing van het systeem."
+
+msgid "Show download window"
+msgstr "Downloadvenster tonen"
+
+msgid "Save automatically to selected folder"
+msgstr "Automatisch opslaan in de geselecteerde map"
+
+msgid "Ask where to save every time"
+msgstr "Elke keer vragen waar op te slaan"
