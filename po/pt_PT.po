@@ -5035,3 +5035,34 @@ msgstr ""
 
 #~ msgid "Creating temporary directory:"
 #~ msgstr "A criar um diretório temporário:"
+
+
+msgid "No recent downloads"
+msgstr "Nenhuma transferência recente"
+
+msgid "Clear download history"
+msgstr "Limpar histórico de transferências"
+
+msgid "Open downloads folder"
+msgstr "Abrir pasta de Transferências"
+
+msgid "Download behavior"
+msgstr "Comportamento das transferências"
+
+msgid "Choose what happens when a download starts."
+msgstr "Escolha o que acontece quando uma transferência é iniciada."
+
+msgid "Automatically open PDFs and images"
+msgstr "Abrir PDFs e imagens automaticamente"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Abrir transferências concluídas de PDF e imagens com a aplicação predefinida do sistema."
+
+msgid "Show download window"
+msgstr "Mostrar janela de transferência"
+
+msgid "Save automatically to selected folder"
+msgstr "Guardar automaticamente na pasta selecionada"
+
+msgid "Ask where to save every time"
+msgstr "Perguntar onde guardar de cada vez"
