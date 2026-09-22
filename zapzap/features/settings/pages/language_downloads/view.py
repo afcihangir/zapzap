@@ -87,6 +87,19 @@ class LanguageDownloadSettingsView(SettingsPage):
         )
         card.add_row(self.auto_open_media_row)
 
+        self.reset_download_permissions_row = SettingsActionRow(
+            _("Automatic download site permissions"),
+            _(
+                "Clear remembered allow or block decisions for sites that "
+                "request multiple downloads."
+            ),
+            button_text=_("Reset"),
+        )
+        self.btn_reset_download_permissions = (
+            self.reset_download_permissions_row.button
+        )
+        card.add_row(self.reset_download_permissions_row)
+
         section.add_card(card)
         self.add_section(section)
 
