@@ -172,6 +172,11 @@ class DownloadRow(QWidget):
         return button
 
     def _system_file_icon(self, path: str, name: str) -> QIcon:
+        if path and os.path.exists(path):
+            icon = self._file_icon_provider.icon(QFileInfo(path))
+            if not icon.isNull():
+                return icon
+
         mime = QMimeDatabase().mimeTypeForFile(
             name or path,
             QMimeDatabase.MatchMode.MatchExtension,
