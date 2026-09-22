@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 from PyQt6.QtCore import QSettings
+from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 
 from zapzap.core.config.settings.downloads import DownloadBehavior, DownloadSettings
 from zapzap.core.config.settings_manager import SettingsManager
@@ -60,6 +61,50 @@ class DownloadSettingsTests(TemporarySettingsTest):
         settings.auto_open_media = True
 
         self.assertTrue(DownloadSettings().auto_open_media)
+
+
+class FakeDownload:
+
+    def __init__(self, received, total):
+        self._received = received
+        self._total = total
+
+    def state(self):
+        return QWebEngineDownloadRequest.DownloadState.DownloadInProgress
+
+    def receivedBytes(self):
+        return self._received
+
+    def totalBytes(self):
+        return self._total
+
+
+class DownloadProgressTests(unittest.TestCase):
+
+    def setUp(self):
+        self._previous_active = DownloadManager._active_downloads
+        DownloadManager._active_downloads = []
+
+    def tearDown(self):
+        DownloadManager._active_downloads = self._previous_active
+
+    def test_progress_is_weighted_by_total_bytes(self):
+        DownloadManager._active_downloads = [
+            FakeDownload(50, 100),
+            FakeDownload(100, 300),
+        ]
+
+        self.assertEqual(DownloadManager.progress_summary(), (2, 38))
+
+    def test_unknown_size_returns_no_percentage(self):
+        DownloadManager._active_downloads = [
+            FakeDownload(10, -1),
+        ]
+
+        self.assertEqual(DownloadManager.progress_summary(), (1, None))
+
+    def test_no_active_downloads_returns_empty_summary(self):
+        self.assertEqual(DownloadManager.progress_summary(), (0, None))
 
 
 class DownloadAutoOpenTypeTests(unittest.TestCase):
