@@ -4911,3 +4911,54 @@ msgstr "Автоматично зберігати у вибрану папку"
 
 msgid "Ask where to save every time"
 msgstr "Щоразу запитувати, куди зберегти"
+
+msgid "Multiple downloads"
+msgstr "Кілька завантажень"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} хоче завантажити кілька файлів."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Дозволити ці додаткові завантаження?"
+
+msgid "Allow once"
+msgstr "Дозволити один раз"
+
+msgid "Always allow"
+msgstr "Завжди дозволяти"
+
+msgid "Block"
+msgstr "Блокувати"
+
+msgid "Automatic download site permissions"
+msgstr "Дозволи сайтів на автоматичні завантаження"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Очистити збережені рішення про дозвіл або блокування сайтів, які запитують кілька завантажень."
+
+msgid "Pause"
+msgstr "Призупинити"
+
+msgid "Resume"
+msgstr "Продовжити"
+
+msgid "Queued"
+msgstr "У черзі"
+
+msgid "Paused"
+msgstr "Призупинено"
+
+msgid "Interrupted"
+msgstr "Перервано"
+
+msgid "Cancelled"
+msgstr "Скасовано"
+
+msgid "Blocked"
+msgstr "Заблоковано"
+
+msgid "Completed"
+msgstr "Завершено"
+
+msgid "This site"
+msgstr "Цей сайт"
