@@ -87,7 +87,7 @@ documente o que ele protege.
 | `test_dictionary_manager.py` | store próprio, migração, catálogo/cache, rede segura, downloads atômicos, importação/remoção, diálogo compartilhado, provisionamento único do idioma do sistema e ausência de dicionários nos pacotes oficiais |
 | `test_dictionary_options.py` | descoberta dinâmica, nomes amigáveis, ordenação, redimensionamento e fallback de dicionários personalizados |
 | `test_display_backend.py` | seleção automática/forçada do backend Qt, precedência de ambiente/CLI/plataforma e migração da chave Wayland legada |
-| `test_download_settings.py` | modos persistidos de download, fallback seguro e abertura automática limitada a PDF/imagens |
+| `test_download_settings.py` | modos persistidos, permissão múltipla sem bypass temporal, fila global, sanitização de nomes/alvos e abertura automática por MIME de conteúdo verificado |
 | `test_documentation_structure.py` | camadas de UI, ciclo numérico versionado do changelog e sincronização entre árvore, inventários técnicos, convenção de commits e guia para agentes |
 | `test_donations_page.py` | URLs HTTPS oficiais, fallback externo, cartões responsivos/acessíveis, troca imediata de idioma e rota única pela sidebar, Configurações e Sobre |
 | `test_external_link_lifecycle.py` | classificação interna/externa de pop-ups, profile compartilhado, entrega única ao navegador e cleanup no fechamento/shutdown |
@@ -207,8 +207,11 @@ gráfica real.
    confirme que ele não fecha por temporizador, mas fecha ao clicar fora.
 5. Selecione **perguntar sempre**, faça um download e confirme que o seletor de
    arquivo aparece para cada download e que cancelar não inicia a transferência.
-6. Ative a abertura automática e confirme PDFs e imagens no aplicativo padrão
-   do sistema; ZIP, texto e outros tipos não devem ser abertos automaticamente.
+6. Ative a abertura automática e confirme PDFs e imagens raster válidos no
+   aplicativo padrão do sistema. Renomeie um PDF válido para extensão
+   executável, use conteúdo de texto com extensão de imagem e teste SVG: nenhum
+   deles deve abrir automaticamente. ZIP, texto e outros tipos também devem
+   permanecer fechados.
 7. Em cada item do histórico, clique no nome para abrir o arquivo e use o ícone
    de pasta exibido no hover para abrir a pasta. Valide também limpar histórico
    e abrir a pasta de downloads.
@@ -219,15 +222,21 @@ gráfica real.
    aparece como **Sırada** e inicia automaticamente quando uma vaga é liberada.
    Com várias contas do WhatsApp abertas, confirme que todas compartilham o
    mesmo limite de seis.
-10. Sem decisão salva, faça dois pedidos de download do WhatsApp em sequência
-    dentro de dez segundos. Confirme que o primeiro segue normalmente e o
-    segundo pede permissão. Teste **permitir uma vez**, **permitir sempre** e
-    **bloquear**; depois use Configurações para limpar a decisão lembrada.
+10. Sem decisão salva, faça um primeiro download do WhatsApp e confirme que ele
+    segue normalmente. Depois faça novos pedidos, inclusive esperando mais de
+    dez segundos entre eles: cada pedido posterior deve pedir permissão enquanto
+    a decisão permanecer em **perguntar**. Teste **permitir uma vez**, confirme
+    que o pedido seguinte volta a perguntar, depois teste **permitir sempre** e
+    **bloquear**; por fim use Configurações para limpar a decisão lembrada.
 11. Durante um download, confira o ícone de tipo de arquivo fornecido pelo
     sistema, a barra de progresso e o percentual. Pause e retome. Force uma
     interrupção de rede e confirme **Kesildi**; quando Qt indicar que o item é
     retomável, **Devam et** deve continuar a mesma solicitação. Cancele outro
     item e confirme o estado visual **İptal edildi** sem animação de sucesso.
+12. Teste nomes recebidos como `../../arquivo.pdf`, separadores Windows,
+    caracteres de controle e nomes reservados; o destino final deve permanecer
+    dentro da pasta escolhida. Crie também um link simbólico no destino apontando
+    para fora e confirme que o alvo é rejeitado.
 
 ## Validação manual do proxy estrito
 
