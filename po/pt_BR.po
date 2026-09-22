@@ -5369,3 +5369,54 @@ msgstr "Salvar automaticamente na pasta selecionada"
 
 msgid "Ask where to save every time"
 msgstr "Perguntar onde salvar sempre"
+
+msgid "Multiple downloads"
+msgstr "Vários downloads"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} quer baixar vários arquivos."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Deseja permitir esses downloads adicionais?"
+
+msgid "Allow once"
+msgstr "Permitir uma vez"
+
+msgid "Always allow"
+msgstr "Sempre permitir"
+
+msgid "Block"
+msgstr "Bloquear"
+
+msgid "Automatic download site permissions"
+msgstr "Permissões de sites para downloads automáticos"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Limpar decisões lembradas de permitir ou bloquear sites que solicitam vários downloads."
+
+msgid "Pause"
+msgstr "Pausar"
+
+msgid "Resume"
+msgstr "Retomar"
+
+msgid "Queued"
+msgstr "Na fila"
+
+msgid "Paused"
+msgstr "Pausado"
+
+msgid "Interrupted"
+msgstr "Interrompido"
+
+msgid "Cancelled"
+msgstr "Cancelado"
+
+msgid "Blocked"
+msgstr "Bloqueado"
+
+msgid "Completed"
+msgstr "Concluído"
+
+msgid "This site"
+msgstr "Este site"
