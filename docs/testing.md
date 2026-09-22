@@ -193,7 +193,7 @@ documente o que ele protege.
 Use arquivos de teste sem dados sensíveis e valide cada modo em uma sessão
 gráfica real.
 
-1. Em **Indirme davranışı**, mantenha o modo de janela e confirme que o diálogo
+1. Em **İndirme davranışı**, mantenha o modo de janela e confirme que o diálogo
    Salvar/Abrir/Mais continua sendo exibido.
 2. Selecione o modo automático, baixe um arquivo e confirme que ele vai para a
    pasta configurada sem diálogo; ao concluir, o menu de downloads deve abrir e
