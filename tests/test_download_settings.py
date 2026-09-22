@@ -1,4 +1,4 @@
-"""Tests for persisted download behavior and automatic media opening."""
+"""Tests for download settings, queue state and media handling."""
 
 from pathlib import Path
 import tempfile
@@ -7,7 +7,11 @@ import unittest
 from PyQt6.QtCore import QSettings
 from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 
-from zapzap.core.config.settings.downloads import DownloadBehavior, DownloadSettings
+from zapzap.core.config.settings.downloads import (
+    DownloadBehavior,
+    DownloadSettings,
+    MultipleDownloadPermission,
+)
 from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.features.downloads.download_manager import DownloadManager
 
@@ -62,15 +66,72 @@ class DownloadSettingsTests(TemporarySettingsTest):
 
         self.assertTrue(DownloadSettings().auto_open_media)
 
+    def test_multiple_download_permissions_default_to_ask(self):
+        settings = DownloadSettings()
+
+        self.assertEqual(
+            settings.multiple_download_permission("https://example.com"),
+            MultipleDownloadPermission.ASK,
+        )
+
+    def test_multiple_download_permissions_can_be_remembered_and_reset(self):
+        settings = DownloadSettings()
+        origin = "https://example.com"
+
+        settings.set_multiple_download_permission(
+            origin,
+            MultipleDownloadPermission.ALLOW,
+        )
+        self.assertEqual(
+            DownloadSettings().multiple_download_permission(origin),
+            MultipleDownloadPermission.ALLOW,
+        )
+
+        settings.set_multiple_download_permission(
+            origin,
+            MultipleDownloadPermission.BLOCK,
+        )
+        self.assertEqual(
+            DownloadSettings().multiple_download_permission(origin),
+            MultipleDownloadPermission.BLOCK,
+        )
+
+        settings.clear_multiple_download_permissions()
+        self.assertEqual(
+            DownloadSettings().multiple_download_permission(origin),
+            MultipleDownloadPermission.ASK,
+        )
+
 
 class FakeDownload:
 
-    def __init__(self, received, total):
+    def __init__(
+        self,
+        received,
+        total,
+        *,
+        state=QWebEngineDownloadRequest.DownloadState.DownloadInProgress,
+        paused=False,
+        name="file.bin",
+        directory="/tmp",
+        finished=False,
+    ):
         self._received = received
         self._total = total
+        self._state = state
+        self._paused = paused
+        self._name = name
+        self._directory = directory
+        self._finished = finished
 
     def state(self):
-        return QWebEngineDownloadRequest.DownloadState.DownloadInProgress
+        return self._state
+
+    def isPaused(self):
+        return self._paused
+
+    def isFinished(self):
+        return self._finished
 
     def receivedBytes(self):
         return self._received
@@ -78,33 +139,105 @@ class FakeDownload:
     def totalBytes(self):
         return self._total
 
+    def downloadDirectory(self):
+        return self._directory
 
-class DownloadProgressTests(unittest.TestCase):
+    def downloadFileName(self):
+        return self._name
+
+    def suggestedFileName(self):
+        return self._name
+
+    def interruptReasonString(self):
+        return ""
+
+
+class DownloadQueueTests(unittest.TestCase):
 
     def setUp(self):
         self._previous_active = DownloadManager._active_downloads
+        self._previous_queued = DownloadManager._queued_downloads
+        self._previous_meta = DownloadManager._download_meta
+        self._previous_terminal = DownloadManager._terminal_records
+
         DownloadManager._active_downloads = []
+        DownloadManager._queued_downloads = []
+        DownloadManager._download_meta = {}
+        DownloadManager._terminal_records = []
 
     def tearDown(self):
         DownloadManager._active_downloads = self._previous_active
+        DownloadManager._queued_downloads = self._previous_queued
+        DownloadManager._download_meta = self._previous_meta
+        DownloadManager._terminal_records = self._previous_terminal
+
+    def track(self, download, origin="https://example.com", sequence=1):
+        DownloadManager._active_downloads.append(download)
+        DownloadManager._download_meta[id(download)] = {
+            "origin": origin,
+            "sequence": sequence,
+            "status": "active",
+            "open_on_complete": False,
+            "terminal_override": None,
+        }
 
     def test_progress_is_weighted_by_total_bytes(self):
-        DownloadManager._active_downloads = [
-            FakeDownload(50, 100),
-            FakeDownload(100, 300),
-        ]
+        first = FakeDownload(50, 100, name="first.bin")
+        second = FakeDownload(100, 300, name="second.bin")
+        self.track(first, sequence=1)
+        self.track(second, sequence=2)
 
         self.assertEqual(DownloadManager.progress_summary(), (2, 38))
 
     def test_unknown_size_returns_no_percentage(self):
-        DownloadManager._active_downloads = [
-            FakeDownload(10, -1),
-        ]
+        download = FakeDownload(10, -1)
+        self.track(download)
 
         self.assertEqual(DownloadManager.progress_summary(), (1, None))
 
     def test_no_active_downloads_returns_empty_summary(self):
         self.assertEqual(DownloadManager.progress_summary(), (0, None))
+
+    def test_same_origin_active_limit_matches_chromium_style_cap(self):
+        self.assertEqual(DownloadManager.MAX_ACTIVE_PER_ORIGIN, 6)
+
+        for index in range(6):
+            self.track(
+                FakeDownload(0, 100, name=f"file-{index}.bin"),
+                origin="https://example.com",
+                sequence=index,
+            )
+
+        self.track(
+            FakeDownload(0, 100, name="other.bin"),
+            origin="https://other.example",
+            sequence=10,
+        )
+
+        self.assertEqual(
+            DownloadManager._origin_active_count("https://example.com"),
+            6,
+        )
+        self.assertEqual(
+            DownloadManager._origin_active_count("https://other.example"),
+            1,
+        )
+
+    def test_queued_item_is_exposed_as_queued(self):
+        queued = FakeDownload(
+            0,
+            100,
+            state=QWebEngineDownloadRequest.DownloadState.DownloadRequested,
+            name="queued.pdf",
+        )
+        self.track(queued)
+        DownloadManager._queued_downloads.append(queued)
+
+        item = DownloadManager.item_snapshot(id(queued))
+
+        self.assertIsNotNone(item)
+        self.assertEqual(item["status"], "queued")
+        self.assertEqual(item["percent"], 0)
 
 
 class DownloadAutoOpenTypeTests(unittest.TestCase):
