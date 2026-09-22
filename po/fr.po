@@ -4872,3 +4872,12 @@ msgstr "Terminé"
 
 msgid "This site"
 msgstr "Ce site"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp souhaite télécharger plusieurs fichiers."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Autorisation de téléchargements multiples WhatsApp"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Effacer la décision mémorisée d’autoriser ou de bloquer les téléchargements WhatsApp répétés."
