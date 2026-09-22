@@ -4974,3 +4974,12 @@ msgstr "Завершено"
 
 msgid "This site"
 msgstr "Этот сайт"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp хочет скачать несколько файлов."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Разрешение на несколько загрузок WhatsApp"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Очистить сохранённое решение о разрешении или блокировке повторных загрузок WhatsApp."
