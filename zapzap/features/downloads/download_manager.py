@@ -85,6 +85,7 @@ class DownloadManager:
         direct_mode = behavior != DownloadBehavior.DIALOG
 
         def handle_state(state):
+            download_events.progress_changed.emit()
             terminal_states = {
                 QWebEngineDownloadRequest.DownloadState.DownloadCompleted,
                 QWebEngineDownloadRequest.DownloadState.DownloadCancelled,
@@ -243,6 +244,8 @@ class DownloadManager:
     @staticmethod
     def progress_summary():
         """Return active count and byte-weighted completion percentage."""
+        from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
+
         active_count = 0
         received_total = 0
         expected_total = 0
@@ -250,6 +253,11 @@ class DownloadManager:
 
         for download in tuple(DownloadManager._active_downloads):
             try:
+                if (
+                    download.state()
+                    != QWebEngineDownloadRequest.DownloadState.DownloadInProgress
+                ):
+                    continue
                 received = int(download.receivedBytes())
                 total = int(download.totalBytes())
             except (RuntimeError, TypeError, ValueError):
