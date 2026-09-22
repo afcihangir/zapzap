@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 
 from zapzap.core.config.settings.base import BaseSettings
@@ -22,7 +21,7 @@ class DownloadBehavior:
 
 
 class MultipleDownloadPermission:
-    """Stable site permission values for repeated downloads."""
+    """Stable permission values for repeated WhatsApp downloads."""
 
     ASK = "ask"
     ALLOW = "allow"
@@ -36,9 +35,9 @@ class DownloadSettings(BaseSettings):
 
     _BEHAVIOR = ("downloads/behavior", DownloadBehavior.DIALOG)
     _AUTO_OPEN_MEDIA = ("downloads/auto_open_media", False)
-    _MULTIPLE_DOWNLOAD_PERMISSIONS = (
-        "downloads/multiple_download_permissions",
-        "{}",
+    _MULTIPLE_DOWNLOAD_PERMISSION = (
+        "downloads/whatsapp_multiple_download_permission",
+        MultipleDownloadPermission.ASK,
     )
 
     @property
@@ -73,60 +72,26 @@ class DownloadSettings(BaseSettings):
     def auto_open_media(self, value: bool) -> None:
         self._set_bool(self._AUTO_OPEN_MEDIA, value)
 
-    def _multiple_download_permissions(self) -> dict[str, str]:
-        raw = self._get_str(self._MULTIPLE_DOWNLOAD_PERMISSIONS)
-        try:
-            value = json.loads(raw)
-        except (TypeError, ValueError, json.JSONDecodeError):
-            value = {}
-
-        if not isinstance(value, dict):
-            value = {}
-
-        cleaned = {
-            str(origin): str(permission)
-            for origin, permission in value.items()
-            if str(permission) in {
-                MultipleDownloadPermission.ALLOW,
-                MultipleDownloadPermission.BLOCK,
-            }
-        }
-        if cleaned != value:
-            self._set_str(
-                self._MULTIPLE_DOWNLOAD_PERMISSIONS,
-                json.dumps(cleaned, ensure_ascii=False, sort_keys=True),
-            )
-        return cleaned
-
-    def multiple_download_permission(self, origin: str) -> str:
-        if not origin:
-            return MultipleDownloadPermission.ASK
-        return self._multiple_download_permissions().get(
-            origin,
-            MultipleDownloadPermission.ASK,
-        )
-
-    def set_multiple_download_permission(
-        self,
-        origin: str,
-        permission: str,
-    ) -> None:
-        if not origin:
-            return
-
-        permissions = self._multiple_download_permissions()
-        if permission in {
-            MultipleDownloadPermission.ALLOW,
-            MultipleDownloadPermission.BLOCK,
-        }:
-            permissions[origin] = permission
-        else:
-            permissions.pop(origin, None)
+    @property
+    def multiple_download_permission(self) -> str:
+        raw_value = self._get_str(self._MULTIPLE_DOWNLOAD_PERMISSION)
+        if raw_value in MultipleDownloadPermission.VALUES:
+            return raw_value
 
         self._set_str(
-            self._MULTIPLE_DOWNLOAD_PERMISSIONS,
-            json.dumps(permissions, ensure_ascii=False, sort_keys=True),
+            self._MULTIPLE_DOWNLOAD_PERMISSION,
+            MultipleDownloadPermission.ASK,
         )
+        return MultipleDownloadPermission.ASK
 
-    def clear_multiple_download_permissions(self) -> None:
-        self._set_str(self._MULTIPLE_DOWNLOAD_PERMISSIONS, "{}")
+    @multiple_download_permission.setter
+    def multiple_download_permission(self, permission: str) -> None:
+        normalized = (
+            permission
+            if permission in MultipleDownloadPermission.VALUES
+            else MultipleDownloadPermission.ASK
+        )
+        self._set_str(self._MULTIPLE_DOWNLOAD_PERMISSION, normalized)
+
+    def clear_multiple_download_permission(self) -> None:
+        self.multiple_download_permission = MultipleDownloadPermission.ASK
