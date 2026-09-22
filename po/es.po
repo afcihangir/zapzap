@@ -4963,3 +4963,12 @@ msgstr "Completado"
 
 msgid "This site"
 msgstr "Este sitio"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp quiere descargar varios archivos."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Permiso para varias descargas de WhatsApp"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Borrar la decisión recordada de permitir o bloquear descargas repetidas de WhatsApp."
