@@ -139,7 +139,7 @@ class DownloadsMenu(QMenu):
 
     def _clear_history(self):
         DownloadManager.clear_recent_downloads()
-        self.refresh()
+        self.close()
 
     def _open_downloads_folder(self):
         self.close()
