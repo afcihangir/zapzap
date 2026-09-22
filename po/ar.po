@@ -4898,3 +4898,12 @@ msgstr "اكتمل"
 
 msgid "This site"
 msgstr "هذا الموقع"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "يريد WhatsApp تنزيل ملفات متعددة."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "إذن WhatsApp للتنزيلات المتعددة"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "امسح قرار السماح أو الحظر المحفوظ للتنزيلات المتكررة من WhatsApp."
