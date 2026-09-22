@@ -4938,3 +4938,54 @@ msgstr "Automatikus mentés a kiválasztott mappába"
 
 msgid "Ask where to save every time"
 msgstr "Minden alkalommal kérdezze meg a mentési helyet"
+
+msgid "Multiple downloads"
+msgstr "Több letöltés"
+
+msgid "{site} wants to download multiple files."
+msgstr "A(z) {site} több fájlt szeretne letölteni."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Engedélyezi ezeket a további letöltéseket?"
+
+msgid "Allow once"
+msgstr "Engedélyezés egyszer"
+
+msgid "Always allow"
+msgstr "Mindig engedélyezze"
+
+msgid "Block"
+msgstr "Letiltás"
+
+msgid "Automatic download site permissions"
+msgstr "Webhelyek automatikus letöltési engedélyei"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "A több letöltést kérő webhelyek megjegyzett engedélyezési vagy tiltási döntéseinek törlése."
+
+msgid "Pause"
+msgstr "Szünet"
+
+msgid "Resume"
+msgstr "Folytatás"
+
+msgid "Queued"
+msgstr "Sorban"
+
+msgid "Paused"
+msgstr "Szüneteltetve"
+
+msgid "Interrupted"
+msgstr "Megszakítva"
+
+msgid "Cancelled"
+msgstr "Megszakítva"
+
+msgid "Blocked"
+msgstr "Letiltva"
+
+msgid "Completed"
+msgstr "Befejezve"
+
+msgid "This site"
+msgstr "Ez a webhely"
