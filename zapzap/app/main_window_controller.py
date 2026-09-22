@@ -237,6 +237,10 @@ class MainWindowController(MainWindowView):
             badge = QLabel(button)
             badge.setObjectName("DownloadProgressBadge")
             badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            badge.setAttribute(
+                Qt.WidgetAttribute.WA_TransparentForMouseEvents,
+                True,
+            )
             badge.setStyleSheet(
                 """
                 QLabel {
