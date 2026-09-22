@@ -1,11 +1,15 @@
 from PyQt6.QtCore import QBuffer
 from PyQt6.QtCore import QEvent
+from PyQt6.QtCore import QEasingCurve
 from PyQt6.QtCore import QIODevice
+from PyQt6.QtCore import QPropertyAnimation
+from PyQt6.QtCore import QSequentialAnimationGroup
+from PyQt6.QtCore import QSize
 from PyQt6.QtCore import QTimer
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QActionGroup
 from PyQt6.QtGui import QImage
-from PyQt6.QtWidgets import QApplication, QDialog
+from PyQt6.QtWidgets import QApplication, QDialog, QLabel
 
 from zapzap.app.window_lifecycle import WindowLifecycle
 from zapzap.assets.icons.system_icon import SystemIcon
@@ -17,6 +21,7 @@ from zapzap.features.alerts.alert_manager import AlertManager
 from zapzap.features.alerts.external_url import open_external_url
 from zapzap.features.browser.shell.browser_controller import BrowserController
 from zapzap.features.downloads.download_events import download_events
+from zapzap.features.downloads.download_manager import DownloadManager
 from zapzap.features.downloads.ui.downloads_menu import DownloadsMenu
 from zapzap.features.settings.shell.settings_controller import SettingsController
 from zapzap.features.shortcuts.controller import ShortcutsController
@@ -45,6 +50,10 @@ class MainWindowController(MainWindowView):
         )
         self._downloads_menu = DownloadsMenu(self)
         self._downloads_menu_generation = 0
+        self._download_progress_badges = {}
+        self._download_progress_base_icon_sizes = {}
+        self._download_completion_animations = []
+        self._downloads_were_active = False
         self.update_state = (
             update_state if update_state is not None else UpdateState(self)
         )
@@ -111,9 +120,14 @@ class MainWindowController(MainWindowView):
                 auto_close=False,
             )
         )
+        self._setup_download_progress_badges()
         download_events.started.connect(self._on_direct_download_started)
         download_events.completed.connect(self._on_download_completed)
+        download_events.progress_changed.connect(
+            self._refresh_download_progress
+        )
         QTimer.singleShot(0, self.sync_menubar_downloads_button_size)
+        QTimer.singleShot(0, self._refresh_download_progress)
         self.settings_menubar()
         self.refresh_theme_menu()
         self.set_sidebar_visible(
@@ -210,6 +224,151 @@ class MainWindowController(MainWindowView):
             SystemIcon.get_icon("update_available", icon_theme)
         )
         QTimer.singleShot(0, self.sync_menubar_downloads_button_size)
+        QTimer.singleShot(0, self._refresh_download_progress)
+
+    def _download_buttons(self):
+        return (
+            self.browser.btn_downloads,
+            self.btn_menubar_downloads,
+        )
+
+    def _setup_download_progress_badges(self):
+        for button in self._download_buttons():
+            badge = QLabel(button)
+            badge.setObjectName("DownloadProgressBadge")
+            badge.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            badge.setStyleSheet(
+                """
+                QLabel {
+                    background: palette(window);
+                    color: palette(window-text);
+                    border: 1px solid palette(mid);
+                    border-radius: 6px;
+                    padding: 0 2px;
+                    font-size: 8px;
+                    font-weight: 700;
+                }
+                """
+            )
+            badge.hide()
+            self._download_progress_badges[button] = badge
+
+    def _position_download_badge(self, button, badge):
+        badge.adjustSize()
+        width = max(24, badge.width() + 2)
+        height = max(14, badge.height())
+        badge.resize(width, height)
+        badge.move(
+            max(0, button.width() - width - 1),
+            max(0, button.height() - height - 1),
+        )
+        badge.raise_()
+
+    def _refresh_download_progress(self):
+        count, percent = DownloadManager.progress_summary()
+
+        if count <= 0:
+            if self._downloads_were_active:
+                self._downloads_were_active = False
+                self._show_download_complete_animation()
+            else:
+                self._restore_download_button_icons()
+            return
+
+        self._downloads_were_active = True
+        text = f"{percent}%" if percent is not None else "…"
+
+        for button in self._download_buttons():
+            badge = self._download_progress_badges.get(button)
+            if badge is None:
+                continue
+
+            if button not in self._download_progress_base_icon_sizes:
+                self._download_progress_base_icon_sizes[button] = (
+                    button.iconSize()
+                )
+
+            base_size = self._download_progress_base_icon_sizes[button]
+            button.setIconSize(
+                QSize(
+                    max(10, base_size.width() // 2),
+                    max(10, base_size.height() // 2),
+                )
+            )
+            badge.setText(text)
+            self._position_download_badge(button, badge)
+            badge.show()
+
+    def _restore_download_button_icons(self):
+        for button in self._download_buttons():
+            badge = self._download_progress_badges.get(button)
+            if badge is not None:
+                badge.hide()
+
+            base_size = self._download_progress_base_icon_sizes.pop(
+                button,
+                None,
+            )
+            if base_size is not None:
+                button.setIconSize(base_size)
+
+    def _show_download_complete_animation(self):
+        for button in self._download_buttons():
+            badge = self._download_progress_badges.get(button)
+            base_size = self._download_progress_base_icon_sizes.pop(
+                button,
+                button.iconSize(),
+            )
+
+            if badge is not None:
+                badge.setText("✓")
+                self._position_download_badge(button, badge)
+                badge.show()
+
+            small = QSize(
+                max(10, base_size.width() // 2),
+                max(10, base_size.height() // 2),
+            )
+            large = QSize(
+                base_size.width() + 5,
+                base_size.height() + 5,
+            )
+
+            animation = QSequentialAnimationGroup(self)
+
+            grow = QPropertyAnimation(button, b"iconSize", animation)
+            grow.setDuration(160)
+            grow.setStartValue(small)
+            grow.setEndValue(large)
+            grow.setEasingCurve(QEasingCurve.Type.OutBack)
+
+            settle = QPropertyAnimation(button, b"iconSize", animation)
+            settle.setDuration(180)
+            settle.setStartValue(large)
+            settle.setEndValue(base_size)
+            settle.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+            animation.addAnimation(grow)
+            animation.addAnimation(settle)
+            self._download_completion_animations.append(animation)
+
+            def cleanup(group=animation):
+                if group in self._download_completion_animations:
+                    self._download_completion_animations.remove(group)
+
+            animation.finished.connect(cleanup)
+            animation.start()
+
+        QTimer.singleShot(900, self._hide_download_completion_badges)
+
+    def _hide_download_completion_badges(self):
+        count, _percent = DownloadManager.progress_summary()
+        if count > 0:
+            self._refresh_download_progress()
+            return
+
+        for badge in self._download_progress_badges.values():
+            badge.hide()
 
     def set_sidebar_visible(
         self,
@@ -278,6 +437,7 @@ class MainWindowController(MainWindowView):
     def _on_download_completed(self, _path):
         if self._downloads_menu.isVisible():
             self._downloads_menu.refresh()
+        self._refresh_download_progress()
 
     def new_chat(self):
         """Iniciar um novo chat na página atual."""
