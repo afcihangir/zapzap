@@ -45,6 +45,16 @@ class LanguageDownloadSettingsView(SettingsPage):
         self.interface_language_comboBox.setMinimumWidth(240)
         self.interface_language_comboBox.setMinimumContentsLength(18)
         card.add_row(row)
+
+        self.auto_open_media_row = SettingsSwitchRow(
+            _("Automatically open PDFs and images"),
+            _(
+                "Open completed PDF and image downloads with the system "
+                "default application."
+            ),
+        )
+        card.add_row(self.auto_open_media_row)
+
         section.add_card(card)
         self.add_section(section)
 
@@ -54,6 +64,16 @@ class LanguageDownloadSettingsView(SettingsPage):
             _("Choose where downloaded files are saved."),
         )
         card = SettingsCard()
+
+        behavior_row = SettingsSelectRow(
+            _("Download behavior"),
+            _("Choose what happens when a download starts."),
+            [],
+        )
+        self.download_behavior_combo = behavior_row.combo
+        self.download_behavior_combo.setMinimumWidth(280)
+        card.add_row(behavior_row)
+
         row = SettingsPathRow(
             _("Download directory"),
             _("Set a custom folder or restore the default download location."),
