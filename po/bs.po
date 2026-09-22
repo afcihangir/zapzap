@@ -4856,3 +4856,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "Omogući jedan proces za GPU i renderovanje"
+
+
+msgid "No recent downloads"
+msgstr "Nema nedavnih preuzimanja"
+
+msgid "Clear download history"
+msgstr "Očisti historiju preuzimanja"
+
+msgid "Open downloads folder"
+msgstr "Otvori mapu preuzimanja"
+
+msgid "Download behavior"
+msgstr "Ponašanje preuzimanja"
+
+msgid "Choose what happens when a download starts."
+msgstr "Odaberite šta se dešava kada preuzimanje počne."
+
+msgid "Automatically open PDFs and images"
+msgstr "Automatski otvaraj PDF-ove i slike"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Otvori završena preuzimanja PDF-ova i slika zadanom sistemskom aplikacijom."
+
+msgid "Show download window"
+msgstr "Prikaži prozor za preuzimanje"
+
+msgid "Save automatically to selected folder"
+msgstr "Automatski sačuvaj u odabranu mapu"
+
+msgid "Ask where to save every time"
+msgstr "Pitaj gdje sačuvati svaki put"
