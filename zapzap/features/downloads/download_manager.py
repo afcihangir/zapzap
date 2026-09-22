@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from gettext import gettext as _
 
-from PyQt6.QtCore import QStandardPaths, QUrl
+from PyQt6.QtCore import QMimeDatabase, QStandardPaths, QUrl
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWidgets import QFileDialog
 
@@ -34,7 +34,6 @@ class DownloadManager:
     )
 
     MAX_ACTIVE_DOWNLOADS = 6
-    MULTIPLE_DOWNLOAD_WINDOW_SECONDS = 10.0
     MAX_RECENT_DOWNLOADS = 10
     MAX_SESSION_RECORDS = 10
 
@@ -43,10 +42,23 @@ class DownloadManager:
     _queued_downloads = []
     _download_meta = {}
     _terminal_records = []
-    _last_request_at = None
+    _has_seen_download_request = False
     _sequence = 0
 
     _RECENT_DOWNLOADS_KEY = "system/recent_downloads"
+
+    SAFE_AUTO_OPEN_TYPES = {
+        "application/pdf": {".pdf"},
+        "image/jpeg": {".jpg", ".jpeg", ".jpe"},
+        "image/png": {".png"},
+        "image/gif": {".gif"},
+        "image/webp": {".webp"},
+        "image/bmp": {".bmp"},
+        "image/tiff": {".tif", ".tiff"},
+        "image/x-icon": {".ico"},
+        "image/vnd.microsoft.icon": {".ico"},
+        "image/avif": {".avif"},
+    }
 
     @staticmethod
     def set_path(new_path):
@@ -179,19 +191,16 @@ class DownloadManager:
             MultipleDownloadDialog,
         )
 
+        # Qt does not expose whether downloadRequested came from a user gesture.
+        # Therefore only the first request in an application session is
+        # implicitly allowed. Every later request requires the persisted
+        # WhatsApp-wide permission or an explicit one-time decision.
+        if not DownloadManager._has_seen_download_request:
+            DownloadManager._has_seen_download_request = True
+            return True
+
         settings = DownloadSettings()
         permission = settings.multiple_download_permission
-
-        now = time.monotonic()
-        previous = DownloadManager._last_request_at
-        DownloadManager._last_request_at = now
-
-        is_repeated = (
-            previous is not None
-            and now - previous <= DownloadManager.MULTIPLE_DOWNLOAD_WINDOW_SECONDS
-        )
-        if not is_repeated:
-            return True
 
         if permission == MultipleDownloadPermission.ALLOW:
             return True
@@ -383,6 +392,7 @@ class DownloadManager:
                     and DownloadManager.supports_auto_open(
                         DownloadManager._safe_mime_type(download),
                         os.path.basename(path),
+                        path,
                     )
                 )
                 if should_open:
@@ -728,17 +738,80 @@ class DownloadManager:
         download_events.items_changed.emit()
 
     @staticmethod
-    def supports_auto_open(mime_type: str, file_name: str) -> bool:
-        mime_type = (mime_type or "").strip().lower()
-        if mime_type == "application/pdf" or mime_type.startswith("image/"):
-            return True
+    def supports_auto_open(
+        mime_type: str,
+        file_name: str,
+        path: str | None = None,
+    ) -> bool:
+        """Allow auto-open only for verified PDF and raster image files."""
+        if not path or not os.path.isfile(path):
+            return False
 
-        guessed_type, _encoding = mimetypes.guess_type(file_name or "")
-        guessed_type = (guessed_type or "").lower()
-        return (
-            guessed_type == "application/pdf"
-            or guessed_type.startswith("image/")
+        try:
+            detected = QMimeDatabase().mimeTypeForFile(
+                path,
+                QMimeDatabase.MatchMode.MatchContent,
+            ).name()
+        except Exception:
+            logger.exception("Failed to inspect downloaded file MIME type")
+            return False
+
+        detected = (detected or "").split(";", 1)[0].strip().lower()
+        allowed_extensions = DownloadManager.SAFE_AUTO_OPEN_TYPES.get(detected)
+        if not allowed_extensions:
+            return False
+
+        extension = os.path.splitext(file_name or path)[1].lower()
+        if extension not in allowed_extensions:
+            return False
+
+        # A conflicting non-generic server MIME is suspicious. Empty/generic
+        # values are tolerated because content sniffing above is authoritative.
+        reported = (mime_type or "").split(";", 1)[0].strip().lower()
+        generic = {
+            "",
+            "application/octet-stream",
+            "binary/octet-stream",
+            "application/force-download",
+            "application/download",
+            "application/unknown",
+        }
+        if reported not in generic and reported != detected:
+            return False
+
+        return True
+
+    @staticmethod
+    def set_download_target(
+        download,
+        directory: str,
+        file_name: str,
+        mime_type: str | None = None,
+        url: str | None = None,
+    ) -> tuple[str, str]:
+        """Apply a canonical, filename-sanitized target to a download."""
+        if mime_type is None:
+            mime_type = DownloadManager._safe_mime_type(download)
+        if url is None:
+            try:
+                url = download.url().toString()
+            except RuntimeError:
+                url = ""
+
+        normalized_name = DownloadNamingService.normalized_file_name(
+            file_name,
+            mime_type or "",
+            url or "",
         )
+        safe_directory, safe_name = (
+            DownloadNamingService.safe_download_target(
+                directory,
+                normalized_name,
+            )
+        )
+        download.setDownloadDirectory(safe_directory)
+        download.setDownloadFileName(safe_name)
+        return safe_directory, safe_name
 
     @staticmethod
     def _emit_direct_activity(download):
@@ -772,7 +845,19 @@ class DownloadManager:
             return ""
         if not directory or not file_name:
             return ""
-        return os.path.normpath(os.path.join(directory, file_name))
+
+        try:
+            safe_directory, safe_name = (
+                DownloadNamingService.safe_download_target(
+                    directory,
+                    file_name,
+                )
+            )
+        except ValueError:
+            logger.warning("Rejected download path outside its target directory")
+            return ""
+
+        return os.path.join(safe_directory, safe_name)
 
     @staticmethod
     def _safe_file_name(download):
@@ -816,22 +901,14 @@ class DownloadManager:
         )
 
     @staticmethod
-    def _normalize_download_file_name(download):
-        file_name = DownloadNamingService.normalized_file_name(
-            download.downloadFileName() or download.suggestedFileName(),
-            download.mimeType(),
-            download.url().toString(),
-        )
-
-        if file_name != download.downloadFileName():
-            download.setDownloadFileName(file_name)
-
-    @staticmethod
     def _set_initial_download_parameters(download) -> bool:
         configured_path = DownloadManager.get_path()
         try:
-            download.setDownloadDirectory(configured_path)
-            DownloadManager._normalize_download_file_name(download)
+            DownloadManager.set_download_target(
+                download,
+                configured_path,
+                download.downloadFileName() or download.suggestedFileName(),
+            )
             return True
         except Exception:
             logger.exception(
@@ -840,8 +917,11 @@ class DownloadManager:
             )
 
         try:
-            download.setDownloadDirectory(DownloadManager.DOWNLOAD_PATH)
-            DownloadManager._normalize_download_file_name(download)
+            DownloadManager.set_download_target(
+                download,
+                DownloadManager.DOWNLOAD_PATH,
+                download.downloadFileName() or download.suggestedFileName(),
+            )
             DownloadManager.restore_path()
             return True
         except Exception:
@@ -889,16 +969,16 @@ class DownloadManager:
         if not path:
             return False
 
-        normalized_file_name = DownloadNamingService.normalized_file_name(
-            os.path.basename(path),
-            mime_type,
-            url,
-        )
-
         try:
-            download.setDownloadDirectory(os.path.dirname(path))
-            download.setDownloadFileName(normalized_file_name)
-        except RuntimeError:
+            DownloadManager.set_download_target(
+                download,
+                os.path.dirname(path),
+                os.path.basename(path),
+                mime_type,
+                url,
+            )
+        except (RuntimeError, ValueError):
+            logger.exception("Rejected unsafe selected download target")
             return False
         return True
 
