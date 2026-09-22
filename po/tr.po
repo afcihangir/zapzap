@@ -4860,3 +4860,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "GPU ve render için tek işlem modunu etkinleştir"
+
+
+msgid "No recent downloads"
+msgstr "Son indirilen dosya yok"
+
+msgid "Clear download history"
+msgstr "İndirme geçmişini temizle"
+
+msgid "Open downloads folder"
+msgstr "İndirilenler klasörünü aç"
+
+msgid "Download behavior"
+msgstr "İndirme davranışı"
+
+msgid "Choose what happens when a download starts."
+msgstr "Bir indirme başladığında ne olacağını seçin."
+
+msgid "Automatically open PDFs and images"
+msgstr "PDF'leri ve görselleri otomatik aç"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "Tamamlanan PDF ve görsel indirmelerini sistemin varsayılan uygulamasıyla aç."
+
+msgid "Show download window"
+msgstr "İndirme penceresini göster"
+
+msgid "Save automatically to selected folder"
+msgstr "Seçilen klasöre otomatik kaydet"
+
+msgid "Ask where to save every time"
+msgstr "Her seferinde nereye kaydedileceğini sor"
