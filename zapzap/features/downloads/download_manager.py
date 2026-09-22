@@ -188,15 +188,9 @@ class DownloadManager:
         settings = DownloadSettings()
         permission = settings.multiple_download_permission(origin)
 
-        if permission == MultipleDownloadPermission.BLOCK:
-            return False
-
         now = time.monotonic()
         previous = DownloadManager._last_request_at.get(origin)
         DownloadManager._last_request_at[origin] = now
-
-        if permission == MultipleDownloadPermission.ALLOW:
-            return True
 
         is_repeated = (
             previous is not None
@@ -204,6 +198,11 @@ class DownloadManager:
         )
         if not is_repeated:
             return True
+
+        if permission == MultipleDownloadPermission.ALLOW:
+            return True
+        if permission == MultipleDownloadPermission.BLOCK:
+            return False
 
         decision = MultipleDownloadDialog.ask(
             DownloadManager._origin_display_name(origin),
