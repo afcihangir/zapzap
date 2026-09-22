@@ -8,6 +8,7 @@ from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication, QDialog
 
 from zapzap.app.window_lifecycle import WindowLifecycle
+from zapzap.assets.icons.system_icon import SystemIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
 from zapzap.core.theme.theme_manager import ThemeManager
 from zapzap.core.update_checker import UpdateChecker, UpdateState
@@ -15,6 +16,7 @@ from zapzap import __downloadPage__
 from zapzap.features.alerts.alert_manager import AlertManager
 from zapzap.features.alerts.external_url import open_external_url
 from zapzap.features.browser.shell.browser_controller import BrowserController
+from zapzap.features.downloads.ui.downloads_menu import DownloadsMenu
 from zapzap.features.settings.shell.settings_controller import SettingsController
 from zapzap.features.shortcuts.controller import ShortcutsController
 from zapzap.ui.components.main_window import MainWindowView
@@ -40,6 +42,7 @@ class MainWindowController(MainWindowView):
             webview_factory=webview_factory,
             user_provider=user_provider,
         )
+        self._downloads_menu = DownloadsMenu(self)
         self.update_state = (
             update_state if update_state is not None else UpdateState(self)
         )
@@ -100,6 +103,9 @@ class MainWindowController(MainWindowView):
         self.stackedWidget.addWidget(self.browser)
         self._setup_theme_menu()
         self._connect_menu_actions()
+        self.btn_menubar_downloads.clicked.connect(
+            lambda: self.show_downloads_menu(self.btn_menubar_downloads)
+        )
         self.settings_menubar()
         self.refresh_theme_menu()
         self.set_sidebar_visible(
@@ -189,6 +195,13 @@ class MainWindowController(MainWindowView):
             action.setChecked(theme_value == value)
             action.blockSignals(False)
 
+        icon_theme = SystemIcon.Type[
+            ThemeManager.get_current_color_scheme().name
+        ]
+        self.btn_menubar_downloads.setIcon(
+            SystemIcon.get_icon("update_available", icon_theme)
+        )
+
     def set_sidebar_visible(
         self,
         visible: bool,
@@ -210,6 +223,19 @@ class MainWindowController(MainWindowView):
             lambda: ShortcutsController(self).exec())
 
     # === Ações de Menu ===
+    def show_downloads_menu(self, anchor):
+        """Show the shared recent-download menu next to its trigger."""
+        self._downloads_menu.refresh()
+        hint = self._downloads_menu.sizeHint()
+
+        if anchor is self.btn_menubar_downloads:
+            position = anchor.mapToGlobal(anchor.rect().bottomRight())
+            position.setX(position.x() - hint.width())
+        else:
+            position = anchor.mapToGlobal(anchor.rect().topRight())
+
+        self._downloads_menu.popup(position)
+
     def new_chat(self):
         """Iniciar um novo chat na página atual."""
         page = self._current_page_or_alert()
