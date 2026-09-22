@@ -4914,3 +4914,54 @@ msgstr "Automatisch opslaan in de geselecteerde map"
 
 msgid "Ask where to save every time"
 msgstr "Elke keer vragen waar op te slaan"
+
+msgid "Multiple downloads"
+msgstr "Meerdere downloads"
+
+msgid "{site} wants to download multiple files."
+msgstr "{site} wil meerdere bestanden downloaden."
+
+msgid "Do you want to allow these additional downloads?"
+msgstr "Wilt u deze extra downloads toestaan?"
+
+msgid "Allow once"
+msgstr "Eenmalig toestaan"
+
+msgid "Always allow"
+msgstr "Altijd toestaan"
+
+msgid "Block"
+msgstr "Blokkeren"
+
+msgid "Automatic download site permissions"
+msgstr "Sitemachtigingen voor automatische downloads"
+
+msgid "Clear remembered allow or block decisions for sites that request multiple downloads."
+msgstr "Opgeslagen toestaan- of blokkeerbeslissingen wissen voor sites die meerdere downloads aanvragen."
+
+msgid "Pause"
+msgstr "Pauzeren"
+
+msgid "Resume"
+msgstr "Hervatten"
+
+msgid "Queued"
+msgstr "In wachtrij"
+
+msgid "Paused"
+msgstr "Gepauzeerd"
+
+msgid "Interrupted"
+msgstr "Onderbroken"
+
+msgid "Cancelled"
+msgstr "Geannuleerd"
+
+msgid "Blocked"
+msgstr "Geblokkeerd"
+
+msgid "Completed"
+msgstr "Voltooid"
+
+msgid "This site"
+msgstr "Deze site"
