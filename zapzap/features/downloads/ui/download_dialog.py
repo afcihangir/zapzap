@@ -13,7 +13,6 @@ from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 from gettext import gettext as _
 import os
 
-from zapzap.core.config.settings.downloads import DownloadSettings
 from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.features.downloads.download_manager import DownloadManager
 from zapzap.ui.primitives.button import Button
@@ -227,31 +226,11 @@ class DownloadDialog(QDialog):
             self._close_unavailable_download()
             return
 
-        directory = self.initial_directory
-        file_name = self.initial_file_name
-
-        def open_when_done(state):
-            if (
-                state ==
-                QWebEngineDownloadRequest.DownloadState.DownloadCompleted
-            ):
-                path = os.path.join(directory, file_name)
-
-                QDesktopServices.openUrl(
-                    QUrl.fromLocalFile(path)
-                )
-
         try:
-            auto_open_handles_file = (
-                DownloadSettings().auto_open_media
-                and DownloadManager.supports_auto_open(
-                    self.initial_mime_type,
-                    self.initial_file_name,
-                )
+            DownloadManager.start_or_queue(
+                self.download,
+                open_on_complete=True,
             )
-            if not auto_open_handles_file:
-                self.download.stateChanged.connect(open_when_done)
-            self.download.accept()
             self.accept()
         except RuntimeError:
             self._close_unavailable_download()
@@ -267,7 +246,7 @@ class DownloadDialog(QDialog):
             return
 
         try:
-            self.download.accept()
+            DownloadManager.start_or_queue(self.download)
             self.accept()
         except RuntimeError:
             self._close_unavailable_download()
@@ -324,7 +303,7 @@ class DownloadDialog(QDialog):
                 normalized_file_name
             )
 
-            self.download.accept()
+            DownloadManager.start_or_queue(self.download)
             self.accept()
         except RuntimeError:
             self._close_unavailable_download()
@@ -335,7 +314,7 @@ class DownloadDialog(QDialog):
             return
 
         try:
-            self.download.cancel()
+            DownloadManager.cancel_download(id(self.download))
             self.reject()
         except RuntimeError:
             self._close_unavailable_download()
