@@ -214,6 +214,19 @@ gráfica real.
    e abrir a pasta de downloads.
 8. Troque o idioma da interface e confirme a tradução do menu e dos novos
    controles de download.
+9. Inicie sete downloads do mesmo site após permitir downloads múltiplos.
+   Confirme que no máximo seis ficam ativos, o excedente aparece como **Sırada**
+   e inicia automaticamente quando uma vaga é liberada. Repita com outra
+   origem e confirme que ela mantém seu próprio limite.
+10. Em uma origem sem decisão salva, faça dois pedidos de download em sequência
+    dentro de dez segundos. Confirme que o primeiro segue normalmente e o
+    segundo pede permissão. Teste **permitir uma vez**, **permitir sempre** e
+    **bloquear**; depois use Configurações para limpar as decisões lembradas.
+11. Durante um download, confira o ícone de tipo de arquivo fornecido pelo
+    sistema, a barra de progresso e o percentual. Pause e retome. Force uma
+    interrupção de rede e confirme **Kesildi**; quando Qt indicar que o item é
+    retomável, **Devam et** deve continuar a mesma solicitação. Cancele outro
+    item e confirme o estado visual **İptal edildi** sem animação de sucesso.
 
 ## Validação manual do proxy estrito
 
