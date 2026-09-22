@@ -4989,3 +4989,12 @@ msgstr "Befejezve"
 
 msgid "This site"
 msgstr "Ez a webhely"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "A WhatsApp több fájlt szeretne letölteni."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "WhatsApp többes letöltési engedély"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "A megjegyzett engedélyezési vagy tiltási döntés törlése az ismételt WhatsApp-letöltésekhez."
