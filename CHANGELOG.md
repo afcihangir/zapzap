@@ -23,11 +23,11 @@ releases and the AppStream metadata.
   popup after direct downloads. While downloads are active, both download
   buttons show a byte-weighted aggregate percentage with a reduced icon and
   play a short completion animation when the active queue finishes.
-- Added Chrome-style repeated-download protection: the first request from a
-  site proceeds normally, rapid additional requests use an ask/allow/block
-  site permission, remembered decisions can be reset in Settings, and a
-  Chromium-aligned cap of six active downloads per origin queues excess
-  requests without imposing an arbitrary cross-origin global limit.
+- Added Chrome-style repeated-download protection for WhatsApp: the first
+  request proceeds normally, rapid additional requests use one shared
+  ask/allow/block permission, remembered decisions can be reset in Settings,
+  and a global cap of six active WhatsApp downloads queues excess requests.
+  Paused transfers do not occupy an active slot.
 - Added download behavior preferences for preserving the existing confirmation
   dialog, saving directly to the selected folder, or asking for a destination
   every time, plus optional automatic opening of completed PDF and image files
