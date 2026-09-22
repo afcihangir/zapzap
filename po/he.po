@@ -4799,3 +4799,34 @@ msgstr ""
 
 #~ msgid "Enable single process for GPU and rendering"
 #~ msgstr "הפעלת תהליך יחיד למעבד גרפי ותיצוג"
+
+
+msgid "No recent downloads"
+msgstr "אין הורדות אחרונות"
+
+msgid "Clear download history"
+msgstr "נקה את היסטוריית ההורדות"
+
+msgid "Open downloads folder"
+msgstr "פתח את תיקיית ההורדות"
+
+msgid "Download behavior"
+msgstr "התנהגות הורדות"
+
+msgid "Choose what happens when a download starts."
+msgstr "בחר מה יקרה כאשר הורדה מתחילה."
+
+msgid "Automatically open PDFs and images"
+msgstr "פתח קובצי PDF ותמונות באופן אוטומטי"
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr "פתח הורדות PDF ותמונות שהושלמו באמצעות יישום ברירת המחדל של המערכת."
+
+msgid "Show download window"
+msgstr "הצג חלון הורדה"
+
+msgid "Save automatically to selected folder"
+msgstr "שמור אוטומטית בתיקייה שנבחרה"
+
+msgid "Ask where to save every time"
+msgstr "שאל היכן לשמור בכל פעם"
