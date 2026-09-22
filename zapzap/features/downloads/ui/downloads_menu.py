@@ -30,15 +30,17 @@ class DownloadRow(QWidget):
     open_requested = pyqtSignal(str)
     folder_requested = pyqtSignal(str)
 
-    def __init__(self, path: str, parent=None):
+    def __init__(self, path: str, parent=None, active=False):
         super().__init__(parent)
         self.path = path
+        self.active = bool(active)
 
         layout = QHBoxLayout(self)
         layout.setContentsMargins(8, 4, 4, 4)
         layout.setSpacing(6)
 
-        file_button = QPushButton(os.path.basename(path), self)
+        label = os.path.basename(path) + (" …" if self.active else "")
+        file_button = QPushButton(label, self)
         file_button.setObjectName("RecentDownloadFile")
         file_button.setFlat(True)
         file_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -58,6 +60,7 @@ class DownloadRow(QWidget):
             }
             """
         )
+        file_button.setEnabled(not self.active)
         file_button.clicked.connect(
             lambda _checked=False: self.open_requested.emit(self.path)
         )
@@ -100,8 +103,21 @@ class DownloadsMenu(QMenu):
     def refresh(self):
         self.clear()
 
-        recent = DownloadManager.recent_downloads()
-        if recent:
+        active = DownloadManager.active_downloads()
+        recent = [
+            path for path in DownloadManager.recent_downloads()
+            if path not in active
+        ]
+        visible_paths = bool(active or recent)
+
+        if visible_paths:
+            for path in active:
+                action = QWidgetAction(self)
+                row = DownloadRow(path, self, active=True)
+                row.folder_requested.connect(self._open_parent_folder)
+                action.setDefaultWidget(row)
+                self.addAction(action)
+
             for path in recent:
                 action = QWidgetAction(self)
                 row = DownloadRow(path, self)
