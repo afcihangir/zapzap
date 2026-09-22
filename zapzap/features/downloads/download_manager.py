@@ -33,7 +33,7 @@ class DownloadManager:
         QStandardPaths.StandardLocation.DownloadLocation
     )
 
-    MAX_ACTIVE_PER_ORIGIN = 6
+    MAX_ACTIVE_DOWNLOADS = 6
     MULTIPLE_DOWNLOAD_WINDOW_SECONDS = 10.0
     MAX_RECENT_DOWNLOADS = 10
     MAX_SESSION_RECORDS = 10
@@ -43,7 +43,7 @@ class DownloadManager:
     _queued_downloads = []
     _download_meta = {}
     _terminal_records = []
-    _last_request_at = {}
+    _last_request_at = None
     _sequence = 0
 
     _RECENT_DOWNLOADS_KEY = "system/recent_downloads"
@@ -95,14 +95,9 @@ class DownloadManager:
         if not DownloadManager._set_initial_download_parameters(download):
             return
 
-        origin = DownloadManager._download_origin(download)
-        DownloadManager._register_download(download, origin)
+        DownloadManager._register_download(download)
 
-        if not DownloadManager._authorize_repeated_download(
-            download,
-            origin,
-            parent,
-        ):
+        if not DownloadManager._authorize_repeated_download(parent):
             DownloadManager._cancel_download(download, "blocked")
             return
 
@@ -147,14 +142,13 @@ class DownloadManager:
                 DownloadManager._cancel_download(download, "cancelled")
 
     @staticmethod
-    def _register_download(download, origin):
+    def _register_download(download):
         key = DownloadManager._download_key(download)
         if download not in DownloadManager._active_downloads:
             DownloadManager._active_downloads.append(download)
 
         DownloadManager._sequence += 1
         DownloadManager._download_meta[key] = {
-            "origin": origin,
             "sequence": DownloadManager._sequence,
             "status": "requested",
             "open_on_complete": False,
@@ -179,18 +173,18 @@ class DownloadManager:
         download_events.items_changed.emit()
 
     @staticmethod
-    def _authorize_repeated_download(download, origin, parent) -> bool:
+    def _authorize_repeated_download(parent) -> bool:
         from zapzap.features.downloads.ui.multiple_download_dialog import (
             MultipleDownloadDecision,
             MultipleDownloadDialog,
         )
 
         settings = DownloadSettings()
-        permission = settings.multiple_download_permission(origin)
+        permission = settings.multiple_download_permission
 
         now = time.monotonic()
-        previous = DownloadManager._last_request_at.get(origin)
-        DownloadManager._last_request_at[origin] = now
+        previous = DownloadManager._last_request_at
+        DownloadManager._last_request_at = now
 
         is_repeated = (
             previous is not None
@@ -204,24 +198,17 @@ class DownloadManager:
         if permission == MultipleDownloadPermission.BLOCK:
             return False
 
-        decision = MultipleDownloadDialog.ask(
-            DownloadManager._origin_display_name(origin),
-            parent,
-        )
+        decision = MultipleDownloadDialog.ask(parent)
         if decision == MultipleDownloadDecision.ALWAYS_ALLOW:
-            settings.set_multiple_download_permission(
-                origin,
-                MultipleDownloadPermission.ALLOW,
+            settings.multiple_download_permission = (
+                MultipleDownloadPermission.ALLOW
             )
             return True
 
         if decision == MultipleDownloadDecision.ALLOW_ONCE:
             return True
 
-        settings.set_multiple_download_permission(
-            origin,
-            MultipleDownloadPermission.BLOCK,
-        )
+        settings.multiple_download_permission = MultipleDownloadPermission.BLOCK
         return False
 
     @staticmethod
@@ -233,10 +220,9 @@ class DownloadManager:
         if open_on_complete:
             meta["open_on_complete"] = True
 
-        origin = meta["origin"]
         if (
-            DownloadManager._origin_active_count(origin)
-            >= DownloadManager.MAX_ACTIVE_PER_ORIGIN
+            DownloadManager._active_download_count()
+            >= DownloadManager.MAX_ACTIVE_DOWNLOADS
         ):
             if download not in DownloadManager._queued_downloads:
                 DownloadManager._queued_downloads.append(download)
@@ -377,8 +363,6 @@ class DownloadManager:
         if meta is None:
             return
 
-        origin = meta["origin"]
-
         if state == QWebEngineDownloadRequest.DownloadState.DownloadInProgress:
             try:
                 meta["status"] = (
@@ -408,14 +392,14 @@ class DownloadManager:
             DownloadManager._release_download(download)
             if path:
                 download_events.completed.emit(path)
-            DownloadManager._drain_queue(origin)
+            DownloadManager._drain_queue()
             return
 
         if state == QWebEngineDownloadRequest.DownloadState.DownloadCancelled:
             status = meta.get("terminal_override") or "cancelled"
             DownloadManager._record_terminal(download, status)
             DownloadManager._release_download(download)
-            DownloadManager._drain_queue(origin)
+            DownloadManager._drain_queue()
             return
 
         if state == QWebEngineDownloadRequest.DownloadState.DownloadInterrupted:
@@ -430,43 +414,34 @@ class DownloadManager:
                     DownloadManager._queued_downloads.remove(download)
                 download_events.items_changed.emit()
                 download_events.progress_changed.emit()
-                DownloadManager._drain_queue(origin)
+                DownloadManager._drain_queue()
                 return
 
             DownloadManager._record_terminal(download, "interrupted")
             DownloadManager._release_download(download)
-            DownloadManager._drain_queue(origin)
+            DownloadManager._drain_queue()
 
     @staticmethod
-    def _drain_queue(origin=None):
+    def _drain_queue():
         for download in tuple(DownloadManager._queued_downloads):
-            meta = DownloadManager._meta(download)
-            if meta is None:
-                if download in DownloadManager._queued_downloads:
-                    DownloadManager._queued_downloads.remove(download)
-                continue
-
-            item_origin = meta["origin"]
-            if origin is not None and item_origin != origin:
+            if DownloadManager._meta(download) is None:
+                DownloadManager._queued_downloads.remove(download)
                 continue
 
             if (
-                DownloadManager._origin_active_count(item_origin)
-                >= DownloadManager.MAX_ACTIVE_PER_ORIGIN
+                DownloadManager._active_download_count()
+                >= DownloadManager.MAX_ACTIVE_DOWNLOADS
             ):
-                continue
+                break
 
             DownloadManager._begin_download(download)
 
     @staticmethod
-    def _origin_active_count(origin):
+    def _active_download_count():
         from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 
         count = 0
         for download in tuple(DownloadManager._active_downloads):
-            meta = DownloadManager._meta(download)
-            if meta is None or meta["origin"] != origin:
-                continue
             try:
                 if (
                     download.state()
@@ -504,7 +479,6 @@ class DownloadManager:
                     -1,
                 ),
                 "percent": DownloadManager._percent_for_download(download),
-                "origin": meta.get("origin", ""),
                 "reason": reason,
                 "resumable": False,
                 "live": False,
@@ -599,7 +573,6 @@ class DownloadManager:
                     "received": -1,
                     "total": -1,
                     "percent": 100,
-                    "origin": "",
                     "reason": "",
                     "resumable": False,
                     "live": False,
@@ -662,7 +635,6 @@ class DownloadManager:
             "received": received,
             "total": total,
             "percent": percent,
-            "origin": meta.get("origin", ""),
             "reason": reason,
             "resumable": resumable,
             "live": True,
@@ -767,44 +739,6 @@ class DownloadManager:
             guessed_type == "application/pdf"
             or guessed_type.startswith("image/")
         )
-
-    @staticmethod
-    def _download_origin(download) -> str:
-        urls = []
-        try:
-            page = download.page()
-            if page is not None:
-                urls.append(page.url())
-        except RuntimeError:
-            pass
-
-        try:
-            urls.append(download.url())
-        except RuntimeError:
-            pass
-
-        for url in urls:
-            try:
-                host = url.host()
-                scheme = url.scheme()
-                if not host or not scheme:
-                    continue
-                port = url.port()
-                suffix = f":{port}" if port > 0 else ""
-                return f"{scheme}://{host}{suffix}"
-            except (AttributeError, RuntimeError):
-                continue
-        return "unknown"
-
-    @staticmethod
-    def _origin_display_name(origin: str) -> str:
-        if origin == "unknown":
-            return _("This site")
-        try:
-            url = QUrl(origin)
-            return url.host() or origin
-        except Exception:
-            return origin
 
     @staticmethod
     def _emit_direct_activity(download):
