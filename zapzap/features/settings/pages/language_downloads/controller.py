@@ -71,6 +71,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         self.auto_open_media_row.checkbox.toggled.connect(
             self._handle_auto_open_media
         )
+        self.btn_reset_download_permissions.clicked.connect(
+            self._handle_reset_download_permissions
+        )
 
     def _load_download_behavior_options(self):
         combo = self.download_behavior_combo
@@ -223,6 +226,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
 
     def _handle_auto_open_media(self, enabled):
         self.model.auto_open_media = enabled
+
+    def _handle_reset_download_permissions(self):
+        self.model.clear_multiple_download_permissions()
 
     def _handle_path_download(self):
         new_path = self.model.open_folder_dialog(self)
