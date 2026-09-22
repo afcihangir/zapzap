@@ -1,8 +1,10 @@
 """Tests for download settings, queue state and media handling."""
 
 from pathlib import Path
+import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from PyQt6.QtCore import QSettings
 from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
@@ -14,6 +16,10 @@ from zapzap.core.config.settings.downloads import (
 )
 from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.features.downloads.download_manager import DownloadManager
+from zapzap.features.downloads.download_naming_service import DownloadNamingService
+from zapzap.features.downloads.ui.multiple_download_dialog import (
+    MultipleDownloadDecision,
+)
 
 
 class TemporarySettingsTest(unittest.TestCase):
@@ -98,6 +104,108 @@ class DownloadSettingsTests(TemporarySettingsTest):
             DownloadSettings().multiple_download_permission,
             MultipleDownloadPermission.ASK,
         )
+
+
+class RepeatedDownloadSecurityTests(TemporarySettingsTest):
+
+    def setUp(self):
+        super().setUp()
+        self._previous_seen = DownloadManager._has_seen_download_request
+        DownloadManager._has_seen_download_request = False
+
+    def tearDown(self):
+        DownloadManager._has_seen_download_request = self._previous_seen
+        super().tearDown()
+
+    @patch(
+        "zapzap.features.downloads.ui.multiple_download_dialog."
+        "MultipleDownloadDialog.ask"
+    )
+    def test_only_first_session_request_is_implicitly_allowed(self, ask):
+        ask.return_value = MultipleDownloadDecision.ALLOW_ONCE
+
+        self.assertTrue(DownloadManager._authorize_repeated_download(None))
+        ask.assert_not_called()
+
+        self.assertTrue(DownloadManager._authorize_repeated_download(None))
+        self.assertEqual(ask.call_count, 1)
+
+        self.assertTrue(DownloadManager._authorize_repeated_download(None))
+        self.assertEqual(ask.call_count, 2)
+
+    @patch(
+        "zapzap.features.downloads.ui.multiple_download_dialog."
+        "MultipleDownloadDialog.ask"
+    )
+    def test_block_permission_denies_every_later_request(self, ask):
+        settings = DownloadSettings()
+        settings.multiple_download_permission = MultipleDownloadPermission.BLOCK
+
+        self.assertTrue(DownloadManager._authorize_repeated_download(None))
+        self.assertFalse(DownloadManager._authorize_repeated_download(None))
+        self.assertFalse(DownloadManager._authorize_repeated_download(None))
+        ask.assert_not_called()
+
+
+class DownloadNamingSecurityTests(unittest.TestCase):
+
+    def test_path_components_are_removed_from_file_name(self):
+        self.assertEqual(
+            DownloadNamingService.sanitize_file_name("../../report.pdf"),
+            "report.pdf",
+        )
+        self.assertEqual(
+            DownloadNamingService.sanitize_file_name(
+                r"..\..\report.pdf"
+            ),
+            "report.pdf",
+        )
+
+    def test_control_characters_and_windows_reserved_names_are_sanitized(self):
+        self.assertEqual(
+            DownloadNamingService.sanitize_file_name("bad\x00name.pdf"),
+            "bad_name.pdf",
+        )
+        self.assertEqual(
+            DownloadNamingService.sanitize_file_name("CON.pdf"),
+            "_CON.pdf",
+        )
+
+    def test_safe_target_stays_inside_selected_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            safe_directory, safe_name = (
+                DownloadNamingService.safe_download_target(
+                    directory,
+                    "../../report.pdf",
+                )
+            )
+
+            self.assertEqual(safe_directory, os.path.realpath(directory))
+            self.assertEqual(safe_name, "report.pdf")
+            self.assertEqual(
+                os.path.commonpath(
+                    [
+                        safe_directory,
+                        os.path.realpath(
+                            os.path.join(safe_directory, safe_name)
+                        ),
+                    ]
+                ),
+                safe_directory,
+            )
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlink support required")
+    def test_existing_symlink_cannot_escape_download_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            with tempfile.TemporaryDirectory() as outside:
+                link = os.path.join(directory, "report.pdf")
+                os.symlink(os.path.join(outside, "outside.pdf"), link)
+
+                with self.assertRaises(ValueError):
+                    DownloadNamingService.safe_download_target(
+                        directory,
+                        "report.pdf",
+                    )
 
 
 class FakeDownload:
@@ -243,29 +351,112 @@ class DownloadQueueTests(unittest.TestCase):
 
 class DownloadAutoOpenTypeTests(unittest.TestCase):
 
-    def test_pdf_is_supported_by_mime_or_extension(self):
-        self.assertTrue(
-            DownloadManager.supports_auto_open("application/pdf", "file.bin")
+    def _write_file(self, suffix, payload):
+        temporary = tempfile.NamedTemporaryFile(
+            suffix=suffix,
+            delete=False,
         )
-        self.assertTrue(
-            DownloadManager.supports_auto_open("", "document.PDF")
-        )
+        try:
+            temporary.write(payload)
+            temporary.close()
+            return temporary.name
+        except Exception:
+            temporary.close()
+            os.unlink(temporary.name)
+            raise
 
-    def test_images_are_supported_by_mime_or_extension(self):
-        self.assertTrue(
-            DownloadManager.supports_auto_open("image/png", "file.bin")
+    def test_verified_pdf_can_auto_open(self):
+        path = self._write_file(
+            ".pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n",
         )
-        self.assertTrue(
-            DownloadManager.supports_auto_open("", "photo.jpg")
-        )
+        try:
+            self.assertTrue(
+                DownloadManager.supports_auto_open(
+                    "application/pdf",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
 
-    def test_other_file_types_are_not_auto_opened(self):
-        self.assertFalse(
-            DownloadManager.supports_auto_open("application/zip", "archive.zip")
+    def test_verified_png_can_auto_open(self):
+        path = self._write_file(
+            ".png",
+            b"\x89PNG\r\n\x1a\n" + (b"\x00" * 32),
         )
-        self.assertFalse(
-            DownloadManager.supports_auto_open("text/plain", "notes.txt")
+        try:
+            self.assertTrue(
+                DownloadManager.supports_auto_open(
+                    "image/png",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
+
+    def test_safe_content_with_dangerous_extension_is_not_auto_opened(self):
+        path = self._write_file(
+            ".exe",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n",
         )
+        try:
+            self.assertFalse(
+                DownloadManager.supports_auto_open(
+                    "application/pdf",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
+
+    def test_conflicting_reported_mime_is_not_auto_opened(self):
+        path = self._write_file(
+            ".pdf",
+            b"%PDF-1.4\n1 0 obj\n<<>>\nendobj\n%%EOF\n",
+        )
+        try:
+            self.assertFalse(
+                DownloadManager.supports_auto_open(
+                    "application/x-msdownload",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
+
+    def test_svg_is_not_in_automatic_open_allowlist(self):
+        path = self._write_file(
+            ".svg",
+            b'<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+        )
+        try:
+            self.assertFalse(
+                DownloadManager.supports_auto_open(
+                    "image/svg+xml",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
+
+    def test_non_media_file_is_not_auto_opened(self):
+        path = self._write_file(".txt", b"hello")
+        try:
+            self.assertFalse(
+                DownloadManager.supports_auto_open(
+                    "text/plain",
+                    os.path.basename(path),
+                    path,
+                )
+            )
+        finally:
+            os.unlink(path)
 
 
 if __name__ == "__main__":
