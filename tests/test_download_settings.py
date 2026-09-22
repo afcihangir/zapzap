@@ -66,39 +66,36 @@ class DownloadSettingsTests(TemporarySettingsTest):
 
         self.assertTrue(DownloadSettings().auto_open_media)
 
-    def test_multiple_download_permissions_default_to_ask(self):
+    def test_whatsapp_multiple_download_permission_defaults_to_ask(self):
         settings = DownloadSettings()
 
         self.assertEqual(
-            settings.multiple_download_permission("https://example.com"),
+            settings.multiple_download_permission,
             MultipleDownloadPermission.ASK,
         )
 
-    def test_multiple_download_permissions_can_be_remembered_and_reset(self):
+    def test_whatsapp_multiple_download_permission_can_be_remembered_and_reset(self):
         settings = DownloadSettings()
-        origin = "https://example.com"
 
-        settings.set_multiple_download_permission(
-            origin,
-            MultipleDownloadPermission.ALLOW,
+        settings.multiple_download_permission = (
+            MultipleDownloadPermission.ALLOW
         )
         self.assertEqual(
-            DownloadSettings().multiple_download_permission(origin),
+            DownloadSettings().multiple_download_permission,
             MultipleDownloadPermission.ALLOW,
         )
 
-        settings.set_multiple_download_permission(
-            origin,
-            MultipleDownloadPermission.BLOCK,
+        settings.multiple_download_permission = (
+            MultipleDownloadPermission.BLOCK
         )
         self.assertEqual(
-            DownloadSettings().multiple_download_permission(origin),
+            DownloadSettings().multiple_download_permission,
             MultipleDownloadPermission.BLOCK,
         )
 
-        settings.clear_multiple_download_permissions()
+        settings.clear_multiple_download_permission()
         self.assertEqual(
-            DownloadSettings().multiple_download_permission(origin),
+            DownloadSettings().multiple_download_permission,
             MultipleDownloadPermission.ASK,
         )
 
@@ -171,10 +168,9 @@ class DownloadQueueTests(unittest.TestCase):
         DownloadManager._download_meta = self._previous_meta
         DownloadManager._terminal_records = self._previous_terminal
 
-    def track(self, download, origin="https://example.com", sequence=1):
+    def track(self, download, sequence=1):
         DownloadManager._active_downloads.append(download)
         DownloadManager._download_meta[id(download)] = {
-            "origin": origin,
             "sequence": sequence,
             "status": "active",
             "open_on_complete": False,
@@ -198,30 +194,35 @@ class DownloadQueueTests(unittest.TestCase):
     def test_no_active_downloads_returns_empty_summary(self):
         self.assertEqual(DownloadManager.progress_summary(), (0, None))
 
-    def test_same_origin_active_limit_matches_chromium_style_cap(self):
-        self.assertEqual(DownloadManager.MAX_ACTIVE_PER_ORIGIN, 6)
+    def test_whatsapp_active_limit_is_global(self):
+        self.assertEqual(DownloadManager.MAX_ACTIVE_DOWNLOADS, 6)
 
         for index in range(6):
             self.track(
                 FakeDownload(0, 100, name=f"file-{index}.bin"),
-                origin="https://example.com",
+                sequence=index,
+            )
+
+        self.assertEqual(DownloadManager._active_download_count(), 6)
+
+    def test_paused_download_does_not_use_an_active_slot(self):
+        for index in range(5):
+            self.track(
+                FakeDownload(0, 100, name=f"file-{index}.bin"),
                 sequence=index,
             )
 
         self.track(
-            FakeDownload(0, 100, name="other.bin"),
-            origin="https://other.example",
+            FakeDownload(
+                0,
+                100,
+                paused=True,
+                name="paused.bin",
+            ),
             sequence=10,
         )
 
-        self.assertEqual(
-            DownloadManager._origin_active_count("https://example.com"),
-            6,
-        )
-        self.assertEqual(
-            DownloadManager._origin_active_count("https://other.example"),
-            1,
-        )
+        self.assertEqual(DownloadManager._active_download_count(), 5)
 
     def test_queued_item_is_exposed_as_queued(self):
         queued = FakeDownload(
