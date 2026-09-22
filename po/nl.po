@@ -4965,3 +4965,12 @@ msgstr "Voltooid"
 
 msgid "This site"
 msgstr "Deze site"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp wil meerdere bestanden downloaden."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Toestemming voor meerdere WhatsApp-downloads"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "De opgeslagen beslissing om herhaalde WhatsApp-downloads toe te staan of te blokkeren wissen."
