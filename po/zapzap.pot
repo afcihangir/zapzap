@@ -4385,3 +4385,34 @@ msgstr ""
 #, python-brace-format
 msgid "ZapZap {latest} is available. Current version: {current}."
 msgstr ""
+
+
+msgid "No recent downloads"
+msgstr ""
+
+msgid "Clear download history"
+msgstr ""
+
+msgid "Open downloads folder"
+msgstr ""
+
+msgid "Download behavior"
+msgstr ""
+
+msgid "Choose what happens when a download starts."
+msgstr ""
+
+msgid "Automatically open PDFs and images"
+msgstr ""
+
+msgid "Open completed PDF and image downloads with the system default application."
+msgstr ""
+
+msgid "Show download window"
+msgstr ""
+
+msgid "Save automatically to selected folder"
+msgstr ""
+
+msgid "Ask where to save every time"
+msgstr ""
