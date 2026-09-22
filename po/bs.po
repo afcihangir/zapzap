@@ -4938,3 +4938,12 @@ msgstr "Završeno"
 
 msgid "This site"
 msgstr "Ova stranica"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp želi preuzeti više datoteka."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Dozvola za višestruka WhatsApp preuzimanja"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Obriši zapamćenu odluku dozvole ili blokiranja za ponovljena WhatsApp preuzimanja."
