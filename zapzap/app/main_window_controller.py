@@ -111,6 +111,7 @@ class MainWindowController(MainWindowView):
                 auto_close=False,
             )
         )
+        download_events.started.connect(self._on_direct_download_started)
         download_events.completed.connect(self._on_download_completed)
         QTimer.singleShot(0, self.sync_menubar_downloads_button_size)
         self.settings_menubar()
@@ -260,16 +261,23 @@ class MainWindowController(MainWindowView):
         ):
             self._downloads_menu.close()
 
-    def _on_download_completed(self, _path, auto_popup):
-        if not auto_popup or not self.isVisible():
-            return
-
-        anchor = (
+    def _downloads_anchor(self):
+        return (
             self.btn_menubar_downloads
             if self._appearance_settings.menubar_visible
             else self.browser.btn_downloads
         )
-        self.show_downloads_menu(anchor, auto_close=True)
+
+    def _on_direct_download_started(self, _path):
+        if self.isVisible():
+            self.show_downloads_menu(
+                self._downloads_anchor(),
+                auto_close=True,
+            )
+
+    def _on_download_completed(self, _path):
+        if self._downloads_menu.isVisible():
+            self._downloads_menu.refresh()
 
     def new_chat(self):
         """Iniciar um novo chat na página atual."""
