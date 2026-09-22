@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QStandardPaths
@@ -24,6 +25,8 @@ class DownloadManager:
 
     _floating_cards = []
     _active_downloads = []
+    _RECENT_DOWNLOADS_KEY = "system/recent_downloads"
+    MAX_RECENT_DOWNLOADS = 10
 
     @staticmethod
     def set_path(new_path):
@@ -69,6 +72,14 @@ class DownloadManager:
         if not DownloadManager._set_initial_download_parameters(download):
             return
 
+        def remember_completed(state):
+            if (
+                state ==
+                QWebEngineDownloadRequest.DownloadState.DownloadCompleted
+            ):
+                DownloadManager._record_completed_download(download)
+
+        download.stateChanged.connect(remember_completed)
         DownloadManager._active_downloads.append(download)
 
         dialog = DownloadDialog(download, parent)
@@ -86,6 +97,58 @@ class DownloadManager:
 
         if dialog in DownloadManager._floating_cards:
             DownloadManager._floating_cards.remove(dialog)
+
+    @staticmethod
+    def _record_completed_download(download: QWebEngineDownloadRequest):
+        try:
+            directory = download.downloadDirectory()
+            file_name = download.downloadFileName()
+        except RuntimeError:
+            return
+
+        if not directory or not file_name:
+            return
+
+        path = os.path.normpath(os.path.join(directory, file_name))
+        recent = SettingsManager.get(DownloadManager._RECENT_DOWNLOADS_KEY, [])
+        if isinstance(recent, str):
+            recent = [recent]
+        elif not isinstance(recent, (list, tuple)):
+            recent = []
+
+        normalized = os.path.normcase(path)
+        recent = [
+            item for item in recent
+            if isinstance(item, str)
+            and os.path.normcase(os.path.normpath(item)) != normalized
+        ]
+        recent.insert(0, path)
+        SettingsManager.set(
+            DownloadManager._RECENT_DOWNLOADS_KEY,
+            recent[:DownloadManager.MAX_RECENT_DOWNLOADS],
+        )
+
+    @staticmethod
+    def recent_downloads():
+        recent = SettingsManager.get(DownloadManager._RECENT_DOWNLOADS_KEY, [])
+        if isinstance(recent, str):
+            recent = [recent]
+        elif not isinstance(recent, (list, tuple)):
+            recent = []
+
+        valid = [
+            os.path.normpath(item)
+            for item in recent
+            if isinstance(item, str) and os.path.isfile(item)
+        ][:DownloadManager.MAX_RECENT_DOWNLOADS]
+
+        if list(recent) != valid:
+            SettingsManager.set(DownloadManager._RECENT_DOWNLOADS_KEY, valid)
+        return valid
+
+    @staticmethod
+    def clear_recent_downloads():
+        SettingsManager.set(DownloadManager._RECENT_DOWNLOADS_KEY, [])
 
     @staticmethod
     def _normalize_download_file_name(download: QWebEngineDownloadRequest):
