@@ -71,9 +71,19 @@ class DownloadRow(QWidget):
         folder_button.clicked.connect(
             lambda _checked=False: self.folder_requested.emit(self.path)
         )
+        folder_button.setVisible(False)
+        self.folder_button = folder_button
 
         layout.addWidget(file_button, 1)
         layout.addWidget(folder_button)
+
+    def enterEvent(self, event):
+        self.folder_button.setVisible(True)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.folder_button.setVisible(False)
+        super().leaveEvent(event)
 
 
 class DownloadsMenu(QMenu):
