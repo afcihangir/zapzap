@@ -272,11 +272,8 @@ class MainWindowController(MainWindowView):
         count, percent = DownloadManager.progress_summary()
 
         if count <= 0:
-            if self._downloads_were_active:
-                self._downloads_were_active = False
-                self._show_download_complete_animation()
-            else:
-                self._restore_download_button_icons()
+            self._downloads_were_active = False
+            self._restore_download_button_icons()
             return
 
         self._downloads_were_active = True
@@ -441,7 +438,13 @@ class MainWindowController(MainWindowView):
     def _on_download_completed(self, _path):
         if self._downloads_menu.isVisible():
             self._downloads_menu.refresh()
-        self._refresh_download_progress()
+
+        count, _percent = DownloadManager.progress_summary()
+        if count == 0:
+            self._downloads_were_active = False
+            self._show_download_complete_animation()
+        else:
+            self._refresh_download_progress()
 
     def new_chat(self):
         """Iniciar um novo chat na página atual."""
