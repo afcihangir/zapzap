@@ -113,6 +113,12 @@ class DownloadManager:
                 DownloadManager._release_download(download, None)
 
         download.stateChanged.connect(handle_state)
+        download.receivedBytesChanged.connect(
+            download_events.progress_changed.emit
+        )
+        download.totalBytesChanged.connect(
+            download_events.progress_changed.emit
+        )
         DownloadManager._active_downloads.append(download)
 
         if behavior == DownloadBehavior.AUTOMATIC:
@@ -138,7 +144,19 @@ class DownloadManager:
         try:
             dialog.exec()
         finally:
-            DownloadManager._release_download(download, dialog)
+            if dialog in DownloadManager._floating_cards:
+                DownloadManager._floating_cards.remove(dialog)
+
+            try:
+                in_progress = (
+                    download.state()
+                    == QWebEngineDownloadRequest.DownloadState.DownloadInProgress
+                )
+            except RuntimeError:
+                in_progress = False
+
+            if not in_progress:
+                DownloadManager._release_download(download, None)
 
     @staticmethod
     def _accept_download(download):
@@ -160,11 +178,16 @@ class DownloadManager:
 
     @staticmethod
     def _release_download(download: QWebEngineDownloadRequest, dialog=None):
+        removed = False
         if download in DownloadManager._active_downloads:
             DownloadManager._active_downloads.remove(download)
+            removed = True
 
         if dialog is not None and dialog in DownloadManager._floating_cards:
             DownloadManager._floating_cards.remove(dialog)
+
+        if removed:
+            download_events.progress_changed.emit()
 
     @staticmethod
     def _record_completed_download(download: QWebEngineDownloadRequest):
@@ -216,6 +239,38 @@ class DownloadManager:
             if path and path not in paths:
                 paths.append(path)
         return paths
+
+    @staticmethod
+    def progress_summary():
+        """Return active count and byte-weighted completion percentage."""
+        active_count = 0
+        received_total = 0
+        expected_total = 0
+        unknown_size = False
+
+        for download in tuple(DownloadManager._active_downloads):
+            try:
+                received = int(download.receivedBytes())
+                total = int(download.totalBytes())
+            except (RuntimeError, TypeError, ValueError):
+                continue
+
+            active_count += 1
+            if total <= 0 or received < 0:
+                unknown_size = True
+                continue
+
+            received_total += min(received, total)
+            expected_total += total
+
+        if active_count == 0:
+            return 0, None
+
+        if unknown_size or expected_total <= 0:
+            return active_count, None
+
+        percent = round((received_total * 100) / expected_total)
+        return active_count, max(0, min(99, percent))
 
     @staticmethod
     def recent_downloads():
