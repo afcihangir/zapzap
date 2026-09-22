@@ -4966,3 +4966,12 @@ msgstr "Slutförd"
 
 msgid "This site"
 msgstr "Den här webbplatsen"
+
+msgid "WhatsApp wants to download multiple files."
+msgstr "WhatsApp vill ladda ner flera filer."
+
+msgid "WhatsApp multiple-download permission"
+msgstr "Behörighet för flera WhatsApp-nedladdningar"
+
+msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
+msgstr "Rensa det sparade beslutet att tillåta eller blockera upprepade WhatsApp-nedladdningar."
