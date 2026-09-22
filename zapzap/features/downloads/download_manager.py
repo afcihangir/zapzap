@@ -139,12 +139,12 @@ class DownloadManager:
             except RuntimeError:
                 state = None
 
-            if state in (
-                QWebEngineDownloadRequest.DownloadState.DownloadRequested,
-                QWebEngineDownloadRequest.DownloadState.DownloadCancelled,
+            if (
+                state
+                == QWebEngineDownloadRequest.DownloadState.DownloadRequested
+                and download not in DownloadManager._queued_downloads
             ):
-                if state == QWebEngineDownloadRequest.DownloadState.DownloadRequested:
-                    DownloadManager._cancel_download(download, "cancelled")
+                DownloadManager._cancel_download(download, "cancelled")
 
     @staticmethod
     def _register_download(download, origin):
