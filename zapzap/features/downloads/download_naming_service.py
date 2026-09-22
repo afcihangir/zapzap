@@ -74,8 +74,9 @@ class DownloadNamingService:
             value = "download"
 
         stem, extension = os.path.splitext(value)
-        if stem.upper() in DownloadNamingService._WINDOWS_RESERVED_NAMES:
-            stem = f"_{stem}"
+        reserved_stem = stem.rstrip(" .").upper()
+        if reserved_stem in DownloadNamingService._WINDOWS_RESERVED_NAMES:
+            stem = f"_{stem.rstrip(' .') or 'download'}"
             value = f"{stem}{extension}"
 
         if len(value) > DownloadNamingService._MAX_FILE_NAME_LENGTH:
