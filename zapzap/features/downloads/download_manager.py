@@ -300,6 +300,7 @@ class DownloadManager:
             meta["status"] = "paused"
         download_events.items_changed.emit()
         download_events.progress_changed.emit()
+        DownloadManager._drain_queue()
         return True
 
     @staticmethod
@@ -317,10 +318,8 @@ class DownloadManager:
                 == QWebEngineDownloadRequest.DownloadState.DownloadInProgress
                 and download.isPaused()
             ):
-                download.resume()
-                download_events.items_changed.emit()
-                download_events.progress_changed.emit()
-                return True
+                result = DownloadManager.start_or_queue(download)
+                return result in {"started", "queued"}
 
             if (
                 state
@@ -446,6 +445,7 @@ class DownloadManager:
                 if (
                     download.state()
                     == QWebEngineDownloadRequest.DownloadState.DownloadInProgress
+                    and not download.isPaused()
                 ):
                     count += 1
             except RuntimeError:
