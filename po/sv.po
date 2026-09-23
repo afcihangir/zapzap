@@ -4975,3 +4975,15 @@ msgstr "Behörighet för flera WhatsApp-nedladdningar"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Rensa det sparade beslutet att tillåta eller blockera upprepade WhatsApp-nedladdningar."
+
+msgid "Automatically open PDFs"
+msgstr "Öppna PDF-filer automatiskt"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Öppna slutförda PDF-nedladdningar med systemets standardprogram."
+
+msgid "Automatically open images"
+msgstr "Öppna bilder automatiskt"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Öppna slutförda bildnedladdningar med systemets standardprogram."
