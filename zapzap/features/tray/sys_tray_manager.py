@@ -1,6 +1,7 @@
 from gettext import gettext as _
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-from PyQt6.QtGui import QAction
+from PyQt6.QtGui import QAction, QCursor
 
 from zapzap.assets.icons.tray_icon import TrayIcon
 from zapzap.core.config.settings.appearance import AppearanceSettings
@@ -40,7 +41,14 @@ class SysTrayManager:
 
         self._actions = self._create_actions()
         self._trayMenu = self._create_menu()
-        self._tray.setContextMenu(self._trayMenu)
+
+        # Keep the menu detached from QSystemTrayIcon and open it ourselves
+        # only for Context activations. This prevents platform tray backends
+        # from treating a primary click as a menu request and also preserves
+        # DoubleClick on macOS.
+        self._activation_timer = QTimer()
+        self._activation_timer.setSingleShot(True)
+        self._activation_timer.timeout.connect(self._commit_single_click)
 
         self._setup_connections()
 
@@ -76,13 +84,49 @@ class SysTrayManager:
         if main_window:
             self.bind_window(main_window)
 
+    def _toggle_bound_window(self):
+        main_window = getattr(self, "_bound_window", None)
+        if main_window is not None:
+            main_window.show_window()
+
+    def _commit_single_click(self):
+        self._toggle_bound_window()
+
+    def _on_tray_activated(self, reason):
+        activation = QSystemTrayIcon.ActivationReason
+
+        if reason == activation.Context:
+            self._activation_timer.stop()
+            self._trayMenu.popup(QCursor.pos())
+            return
+
+        if reason == activation.DoubleClick:
+            # A double click may be preceded by a Trigger on some platforms.
+            # Cancel the delayed single-click action so the window toggles
+            # exactly once for the whole double-click gesture.
+            self._activation_timer.stop()
+            self._toggle_bound_window()
+            return
+
+        if reason == activation.Trigger:
+            application = QApplication.instance()
+            interval = (
+                application.doubleClickInterval()
+                if application is not None
+                else 400
+            )
+            self._activation_timer.start(max(1, int(interval)))
+            return
+
+        # Unknown and middle-click activations intentionally do nothing.
+
     @classmethod
     def bind_window(cls, main_window):
         """Reconnect tray actions to the current MainWindow instance."""
         instance = cls.instance()
         instance._disconnect_window_actions()
         instance._bound_window = main_window
-        instance._tray.activated.connect(main_window.show_window)
+        instance._tray.activated.connect(instance._on_tray_activated)
         instance._actions["show"].triggered.connect(main_window.show_window)
         instance._actions["settings"].triggered.connect(
             lambda: instance._open_settings(main_window))
