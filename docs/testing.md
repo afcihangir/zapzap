@@ -199,7 +199,7 @@ documente o que ele protege.
 Use arquivos de teste sem dados sensíveis e valide cada modo em uma sessão
 gráfica real.
 
-1. Em **İndirme davranışı**, mantenha o modo de janela e confirme que o diálogo
+1. Em **Comportamento de download**, mantenha o modo de janela e confirme que o diálogo
    Salvar/Abrir/Mais continua sendo exibido.
 2. Selecione o modo automático, baixe um arquivo e confirme que ele vai para a
    pasta configurada sem diálogo; ao iniciar, o menu de downloads deve abrir e
@@ -225,7 +225,7 @@ gráfica real.
    controles de download.
 9. Inicie sete downloads do WhatsApp após permitir downloads múltiplos.
    Confirme que no máximo seis ficam ativos no ZapZap inteiro, o excedente
-   aparece como **Sırada** e inicia automaticamente quando uma vaga é liberada.
+   aparece como **Na fila** e inicia automaticamente quando uma vaga é liberada.
    Com várias contas do WhatsApp abertas, confirme que todas compartilham o
    mesmo limite de seis.
 10. Sem decisão salva, faça um primeiro download do WhatsApp e confirme que ele
@@ -236,16 +236,16 @@ gráfica real.
     **bloquear**; por fim use Configurações para limpar a decisão lembrada.
 11. Durante um download, confira o ícone de tipo de arquivo fornecido pelo
     sistema, a barra de progresso e o percentual. Pause e retome. Force uma
-    interrupção de rede e confirme **Kesildi**; quando Qt indicar que o item é
-    retomável, **Devam et** deve continuar a mesma solicitação. Cancele outro
-    item e confirme o estado visual **İptal edildi** sem animação de sucesso.
+    interrupção de rede e confirme **Interrompido**; quando Qt indicar que o item é
+    retomável, **Retomar** deve continuar a mesma solicitação. Cancele outro
+    item e confirme o estado visual **Cancelado** sem animação de sucesso.
 12. Teste nomes recebidos como `../../arquivo.pdf`, separadores Windows,
     caracteres de controle e nomes reservados; o destino final deve permanecer
     dentro da pasta escolhida. Crie também um link simbólico no destino apontando
     para fora e confirme que o alvo é rejeitado.
 13. Feche o diálogo padrão sem salvar e cancele o seletor de destino antes de a
     transferência começar; nenhum desses pedidos deve aparecer como
-    **İptal edildi**. Cancele depois uma transferência realmente iniciada e
+    **Cancelado**. Cancele depois uma transferência realmente iniciada e
     confirme que ela permanece na posição original da lista.
 14. Baixe um arquivo com nome longo e confirme a elisão no meio, mantendo a
     extensão visível. Em downloads menores que 10 MiB confirme o anel de
