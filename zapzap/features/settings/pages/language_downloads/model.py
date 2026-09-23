@@ -59,12 +59,20 @@ class LanguageDownloadSettingsModel:
         self._download_settings.behavior = value
 
     @property
-    def auto_open_media(self):
-        return self._download_settings.auto_open_media
+    def auto_open_pdf(self):
+        return self._download_settings.auto_open_pdf
 
-    @auto_open_media.setter
-    def auto_open_media(self, value):
-        self._download_settings.auto_open_media = value
+    @auto_open_pdf.setter
+    def auto_open_pdf(self, value):
+        self._download_settings.auto_open_pdf = value
+
+    @property
+    def auto_open_images(self):
+        return self._download_settings.auto_open_images
+
+    @auto_open_images.setter
+    def auto_open_images(self, value):
+        self._download_settings.auto_open_images = value
 
     def clear_multiple_download_permissions(self):
         self._download_settings.clear_multiple_download_permission()
