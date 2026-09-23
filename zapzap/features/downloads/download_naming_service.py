@@ -34,7 +34,7 @@ class DownloadNamingService:
         *(f"LPT{index}" for index in range(1, 10)),
     }
     _INVALID_FILE_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f\x7f]')
-    _MAX_FILE_NAME_LENGTH = 240
+    _MAX_FILE_NAME_BYTES = 240
 
     @staticmethod
     def normalized_file_name(
@@ -79,16 +79,33 @@ class DownloadNamingService:
             stem = f"_{stem.rstrip(' .') or 'download'}"
             value = f"{stem}{extension}"
 
-        if len(value) > DownloadNamingService._MAX_FILE_NAME_LENGTH:
+        if (
+            len(value.encode("utf-8"))
+            > DownloadNamingService._MAX_FILE_NAME_BYTES
+        ):
             stem, extension = os.path.splitext(value)
-            extension = extension[:32]
+            extension = DownloadNamingService._truncate_utf8(
+                extension,
+                32,
+            )
             available = max(
                 1,
-                DownloadNamingService._MAX_FILE_NAME_LENGTH - len(extension),
+                DownloadNamingService._MAX_FILE_NAME_BYTES
+                - len(extension.encode("utf-8")),
             )
-            value = f"{stem[:available]}{extension}"
+            stem = DownloadNamingService._truncate_utf8(stem, available)
+            value = f"{stem}{extension}"
 
         return value or "download"
+
+    @staticmethod
+    def _truncate_utf8(value: str, maximum_bytes: int) -> str:
+        """Trim text without cutting a Unicode code point."""
+        if len(value.encode("utf-8")) <= maximum_bytes:
+            return value
+
+        encoded = value.encode("utf-8")[:maximum_bytes]
+        return encoded.decode("utf-8", errors="ignore")
 
     @staticmethod
     def safe_download_target(directory: str, file_name: str) -> tuple[str, str]:
