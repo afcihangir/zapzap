@@ -39,8 +39,11 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
 
         self.download_path.setText(self.model.get_download_path())
         self._load_download_behavior_options()
-        self.auto_open_media_row.checkbox.setChecked(
-            self.model.auto_open_media
+        self.auto_open_pdf_row.checkbox.setChecked(
+            self.model.auto_open_pdf
+        )
+        self.auto_open_images_row.checkbox.setChecked(
+            self.model.auto_open_images
         )
 
         self._load_interface_languages()
@@ -68,8 +71,11 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         self.download_behavior_combo.currentIndexChanged.connect(
             self._handle_download_behavior
         )
-        self.auto_open_media_row.checkbox.toggled.connect(
-            self._handle_auto_open_media
+        self.auto_open_pdf_row.checkbox.toggled.connect(
+            self._handle_auto_open_pdf
+        )
+        self.auto_open_images_row.checkbox.toggled.connect(
+            self._handle_auto_open_images
         )
         self.btn_reset_download_permissions.clicked.connect(
             self._handle_reset_download_permissions
@@ -224,8 +230,11 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         value = self.download_behavior_combo.currentData()
         self.model.download_behavior = value
 
-    def _handle_auto_open_media(self, enabled):
-        self.model.auto_open_media = enabled
+    def _handle_auto_open_pdf(self, enabled):
+        self.model.auto_open_pdf = enabled
+
+    def _handle_auto_open_images(self, enabled):
+        self.model.auto_open_images = enabled
 
     def _handle_reset_download_permissions(self):
         self.model.clear_multiple_download_permissions()
