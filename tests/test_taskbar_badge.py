@@ -31,6 +31,7 @@ class TrayActivationTests(QtTestCase):
         self.manager = object.__new__(SysTrayManager)
         self.manager._activation_timer = _FakeTimer()
         self.manager._trayMenu = MagicMock()
+        self.manager._trayMenu.isVisible.return_value = False
         self.manager._bound_window = MagicMock()
 
     @patch("zapzap.features.tray.sys_tray_manager.QApplication.instance")
@@ -66,6 +67,17 @@ class TrayActivationTests(QtTestCase):
         self.assertFalse(self.manager._activation_timer.active)
         self.manager._bound_window.show_window.assert_called_once_with()
         self.manager._trayMenu.popup.assert_not_called()
+        self.manager._trayMenu.close.assert_not_called()
+
+    def test_double_click_closes_visible_menu_before_toggling(self):
+        self.manager._trayMenu.isVisible.return_value = True
+
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.DoubleClick
+        )
+
+        self.manager._trayMenu.close.assert_called_once_with()
+        self.manager._bound_window.show_window.assert_called_once_with()
 
     @patch("zapzap.features.tray.sys_tray_manager.QCursor.pos")
     def test_context_click_only_opens_tray_menu(self, cursor_pos):
