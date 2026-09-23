@@ -896,7 +896,12 @@ class DownloadManager:
             )
         )
         download.setDownloadDirectory(safe_directory)
-        download.setDownloadFileName(safe_name)
+        try:
+            current_name = download.downloadFileName()
+        except RuntimeError:
+            current_name = ""
+        if current_name != safe_name:
+            download.setDownloadFileName(safe_name)
         return safe_directory, safe_name
 
     @staticmethod
