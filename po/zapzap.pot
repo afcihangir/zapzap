@@ -4476,3 +4476,15 @@ msgstr ""
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr ""
+
+msgid "Automatically open PDFs"
+msgstr ""
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr ""
+
+msgid "Automatically open images"
+msgstr ""
+
+msgid "Open completed image downloads with the system default application."
+msgstr ""
