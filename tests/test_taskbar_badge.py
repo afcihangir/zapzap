@@ -33,23 +33,31 @@ class TrayActivationTests(QtTestCase):
         self.manager._trayMenu = MagicMock()
         self.manager._bound_window = MagicMock()
 
-    def test_single_click_schedules_one_window_toggle(self):
+    @patch("zapzap.features.tray.sys_tray_manager.QApplication.instance")
+    def test_single_click_schedules_menu_without_toggling(self, application):
+        application.return_value.doubleClickInterval.return_value = 350
+
         self.manager._on_tray_activated(
             QSystemTrayIcon.ActivationReason.Trigger
         )
 
         self.assertTrue(self.manager._activation_timer.active)
+        self.assertEqual(self.manager._activation_timer.intervals, [350])
+        self.manager._bound_window.show_window.assert_not_called()
+        self.manager._trayMenu.popup.assert_not_called()
+
+    @patch("zapzap.features.tray.sys_tray_manager.QCursor.pos")
+    def test_delayed_single_click_opens_menu(self, cursor_pos):
+        position = object()
+        cursor_pos.return_value = position
+
+        self.manager._show_tray_menu()
+
+        self.manager._trayMenu.popup.assert_called_once_with(position)
         self.manager._bound_window.show_window.assert_not_called()
 
-        self.manager._commit_single_click()
-
-        self.manager._bound_window.show_window.assert_called_once_with()
-
-    def test_double_click_cancels_pending_single_and_toggles_once(self):
-        self.manager._on_tray_activated(
-            QSystemTrayIcon.ActivationReason.Trigger
-        )
-        self.assertTrue(self.manager._activation_timer.active)
+    def test_double_click_cancels_pending_menu_and_toggles_once(self):
+        self.manager._activation_timer.start(400)
 
         self.manager._on_tray_activated(
             QSystemTrayIcon.ActivationReason.DoubleClick
@@ -72,16 +80,27 @@ class TrayActivationTests(QtTestCase):
         self.manager._bound_window.show_window.assert_not_called()
         self.assertFalse(self.manager._activation_timer.active)
 
-    def test_middle_and_unknown_clicks_do_nothing(self):
-        for reason in (
-            QSystemTrayIcon.ActivationReason.MiddleClick,
-            QSystemTrayIcon.ActivationReason.Unknown,
-        ):
-            with self.subTest(reason=reason):
-                self.manager._on_tray_activated(reason)
+    @patch("zapzap.features.tray.sys_tray_manager.QApplication.instance")
+    def test_unknown_activation_uses_single_click_menu_path(self, application):
+        application.return_value.doubleClickInterval.return_value = 300
+
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.Unknown
+        )
+
+        self.assertTrue(self.manager._activation_timer.active)
+        self.assertEqual(self.manager._activation_timer.intervals, [300])
+        self.manager._bound_window.show_window.assert_not_called()
+
+    def test_middle_click_does_nothing(self):
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.MiddleClick
+        )
 
         self.manager._bound_window.show_window.assert_not_called()
         self.manager._trayMenu.popup.assert_not_called()
+
+
 
 
 class TaskbarBadgeTests(QtTestCase):
