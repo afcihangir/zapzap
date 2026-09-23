@@ -21,6 +21,7 @@ from zapzap.features.downloads.download_naming_service import DownloadNamingServ
 from zapzap.features.downloads.ui.multiple_download_dialog import (
     MultipleDownloadDecision,
 )
+from zapzap.features.downloads.ui.downloads_menu import DownloadRow
 
 
 class TemporarySettingsTest(unittest.TestCase):
@@ -45,7 +46,8 @@ class DownloadSettingsTests(TemporarySettingsTest):
         settings = DownloadSettings()
 
         self.assertEqual(settings.behavior, DownloadBehavior.DIALOG)
-        self.assertFalse(settings.auto_open_media)
+        self.assertFalse(settings.auto_open_pdf)
+        self.assertFalse(settings.auto_open_images)
 
     def test_download_behavior_choices_are_persisted(self):
         settings = DownloadSettings()
@@ -446,6 +448,22 @@ class DownloadQueueTests(unittest.TestCase):
         self.assertIsNotNone(item)
         self.assertEqual(item["status"], "queued")
         self.assertEqual(item["percent"], 0)
+
+
+class DownloadMenuPresentationTests(unittest.TestCase):
+
+    def test_long_name_is_middle_elided_and_keeps_extension(self):
+        name = (
+            "denemedosyasi-cok-uzun-bir-dosya-adi-"
+            "ve-devami-burada.pdf"
+        )
+
+        rendered = DownloadRow._elide_file_name(name, 38)
+
+        self.assertLessEqual(len(rendered), 38)
+        self.assertIn("…", rendered)
+        self.assertTrue(rendered.endswith(".pdf"))
+        self.assertTrue(rendered.startswith("deneme"))
 
 
 class DownloadAutoOpenTypeTests(unittest.TestCase):
