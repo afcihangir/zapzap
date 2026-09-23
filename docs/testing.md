@@ -120,7 +120,7 @@ documente o que ele protege.
 | `test_settings_radio_group.py` | divisores do grupo de rádio em `ui.components` |
 | `test_software_video_decoding.py` | presets, flags Chromium de renderização/strict proxy, persistência e ordem do bootstrap |
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
-| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta, menu em clique simples/contexto, toggle em duplo clique e compatibilidade com Qt anterior |
+| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta, ativação primária/contexto por backend, integração StatusNotifier/AppIndicator e compatibilidade com Qt anterior |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo, seleção do backend gráfico, reinício e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
 | `test_update_checker.py` | versões, política de builds, respostas/falhas assíncronas, metadados seguros e popover acessível compartilhado entre sidebar e Sobre |
@@ -291,16 +291,17 @@ isolamento estrito e que a flag não é aplicada.
 
 ## Validação manual da bandeja do sistema
 
-1. Clique uma vez com o botão principal no ícone do ZapZap e confirme que o
-   menu da bandeja aparece sem alterar a visibilidade da janela.
-2. Clique com o botão direito/contexto e confirme que o mesmo menu aparece.
-3. Dê um duplo clique rápido com o botão principal e confirme que o menu não
-   permanece aberto e a janela alterna exatamente uma vez entre visível e
-   oculta.
-4. Repita o duplo clique com a janela no estado oposto e confirme o retorno.
-5. Repita em Linux, Windows e macOS. Em Linux/StatusNotifier, valide também o
-   menu nativo do shell, pois alguns ambientes consomem clique simples/contexto
-   antes de emitir `QSystemTrayIcon.activated`.
+1. Em Windows/macOS ou em um backend Linux que entregue `Trigger`, clique uma
+   vez com o botão principal e confirme que a janela alterna entre visível e
+   oculta; clique com o botão direito/contexto e confirme o menu.
+2. Em GNOME com AppIndicator/StatusNotifier, confirme primeiro o comportamento
+   imposto pelo shell. O menu pode abrir tanto no clique principal quanto no
+   contexto sem que o aplicativo receba esses eventos.
+3. Nesse backend Linux, faça a ação de ativação fornecida pelo shell
+   (normalmente duplo clique). Quando ela chegar como `Trigger` ou
+   `DoubleClick`, ZapZap deve alternar a janela e não abrir um segundo `QMenu`.
+4. Confirme que abrir o menu nativo não deixa o cursor do painel em estado de
+   carregamento por causa de um segundo popup criado pelo aplicativo.
 
 ## Validação manual do bloqueio do WhatsApp Web
 
