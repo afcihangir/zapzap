@@ -44,9 +44,15 @@ releases and the AppStream metadata.
   for short/small transfers. A percentage appears only after five seconds when
   the known aggregate size is at least 10 MiB, without resizing the button or
   icon.
-- Added a Linux/Windows/macOS quality matrix for the download regression suite
-  so queueing, path hardening, settings, MIME validation and presentation
-  behavior are exercised on all maintained desktop operating systems.
+- Added a Linux/Windows/macOS quality matrix for download and tray regression
+  coverage so queueing, path hardening, settings, MIME validation, native file
+  presentation and tray interaction behavior are exercised on maintained
+  desktop operating systems.
+- Changed the system tray interaction so a primary single click toggles the
+  application window, a primary double click performs the same toggle exactly
+  once, and only a context/right click opens the tray menu. The context menu is
+  opened explicitly instead of being attached directly to the tray icon so
+  double-click activation remains available on macOS.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
