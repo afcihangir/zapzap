@@ -4881,3 +4881,15 @@ msgstr "Autorisation de téléchargements multiples WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Effacer la décision mémorisée d’autoriser ou de bloquer les téléchargements WhatsApp répétés."
+
+msgid "Automatically open PDFs"
+msgstr "Ouvrir automatiquement les PDF"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Ouvrir les téléchargements PDF terminés avec l’application système par défaut."
+
+msgid "Automatically open images"
+msgstr "Ouvrir automatiquement les images"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Ouvrir les téléchargements d’images terminés avec l’application système par défaut."
