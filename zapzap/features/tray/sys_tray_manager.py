@@ -1,4 +1,5 @@
 from gettext import gettext as _
+import sys
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QAction, QCursor
@@ -42,10 +43,14 @@ class SysTrayManager:
         self._actions = self._create_actions()
         self._trayMenu = self._create_menu()
 
-        # Keep the menu detached from QSystemTrayIcon and open it ourselves
-        # only for Context activations. This prevents platform tray backends
-        # from treating a primary click as a menu request and also preserves
-        # DoubleClick on macOS.
+        # Linux StatusNotifier/AppIndicator hosts may consume primary/context
+        # clicks without emitting QSystemTrayIcon.activated unless a native
+        # context menu is attached. Keep that native integration on Linux;
+        # Windows/macOS use the explicit activation routing below.
+        self._native_context_menu = sys.platform.startswith("linux")
+        if self._native_context_menu:
+            self._tray.setContextMenu(self._trayMenu)
+
         self._activation_timer = QTimer(self._tray)
         self._activation_timer.setSingleShot(True)
         self._activation_timer.timeout.connect(self._show_tray_menu)
@@ -90,6 +95,8 @@ class SysTrayManager:
             main_window.show_window()
 
     def _show_tray_menu(self):
+        if self._trayMenu.isVisible():
+            return
         self._trayMenu.popup(QCursor.pos())
 
     def _schedule_tray_menu(self):
@@ -106,8 +113,10 @@ class SysTrayManager:
 
         if reason == activation.DoubleClick:
             # A double click is often preceded by a primary-click activation.
-            # Cancel its delayed menu so the gesture only toggles the window.
+            # Cancel/close its menu so the gesture only toggles the window.
             self._activation_timer.stop()
+            if self._trayMenu.isVisible():
+                self._trayMenu.close()
             self._toggle_bound_window()
             return
 
