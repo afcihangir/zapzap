@@ -4962,3 +4962,15 @@ msgstr "Uprawnienie do wielu pobrań WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Wyczyść zapamiętaną decyzję o zezwoleniu lub blokowaniu powtarzających się pobrań WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "Automatycznie otwieraj pliki PDF"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Otwieraj ukończone pobrania PDF w domyślnej aplikacji systemowej."
+
+msgid "Automatically open images"
+msgstr "Automatycznie otwieraj obrazy"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Otwieraj ukończone pobrania obrazów w domyślnej aplikacji systemowej."
