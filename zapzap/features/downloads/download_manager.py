@@ -33,6 +33,8 @@ class DownloadManager:
     )
 
     MAX_ACTIVE_DOWNLOADS = 6
+    PROGRESS_PERCENT_MIN_BYTES = 10 * 1024 * 1024
+    PROGRESS_PERCENT_MIN_SECONDS = 5.0
     MAX_RECENT_DOWNLOADS = 10
     MAX_SESSION_RECORDS = 10
 
@@ -128,7 +130,7 @@ class DownloadManager:
                 if direct_mode:
                     DownloadManager._emit_direct_activity(download)
             else:
-                DownloadManager._cancel_download(download, "cancelled")
+                DownloadManager._discard_unstarted_download(download)
             return
 
         dialog = DownloadDialog(download, parent)
@@ -150,7 +152,7 @@ class DownloadManager:
                 == QWebEngineDownloadRequest.DownloadState.DownloadRequested
                 and download not in DownloadManager._queued_downloads
             ):
-                DownloadManager._cancel_download(download, "cancelled")
+                DownloadManager._discard_unstarted_download(download)
 
     @staticmethod
     def _register_download(download):
@@ -164,6 +166,8 @@ class DownloadManager:
             "status": "requested",
             "open_on_complete": False,
             "terminal_override": None,
+            "suppress_terminal": False,
+            "started_at": None,
         }
 
         download.stateChanged.connect(
@@ -251,6 +255,9 @@ class DownloadManager:
 
         try:
             state = download.state()
+            if meta.get("started_at") is None:
+                meta["started_at"] = time.monotonic()
+
             if (
                 state
                 == QWebEngineDownloadRequest.DownloadState.DownloadRequested
@@ -349,6 +356,18 @@ class DownloadManager:
         return True
 
     @staticmethod
+    def _discard_unstarted_download(download):
+        """Cancel a request that never started without creating history."""
+        meta = DownloadManager._meta(download)
+        if meta is not None:
+            meta["suppress_terminal"] = True
+        try:
+            download.cancel()
+        except RuntimeError:
+            DownloadManager._release_download(download)
+        return False
+
+    @staticmethod
     def _cancel_download(download, status="cancelled"):
         meta = DownloadManager._meta(download)
         if meta is not None:
@@ -384,15 +403,19 @@ class DownloadManager:
         if state == QWebEngineDownloadRequest.DownloadState.DownloadCompleted:
             path = DownloadManager._record_completed_download(download)
             if path:
+                DownloadManager._record_terminal(download, "completed")
                 settings = DownloadSettings()
+                auto_open_kind = DownloadManager.auto_open_kind(
+                    DownloadManager._safe_mime_type(download),
+                    os.path.basename(path),
+                    path,
+                )
                 should_open = meta.get("open_on_complete", False)
                 should_open = should_open or (
-                    settings.auto_open_media
-                    and DownloadManager.supports_auto_open(
-                        DownloadManager._safe_mime_type(download),
-                        os.path.basename(path),
-                        path,
-                    )
+                    auto_open_kind == "pdf" and settings.auto_open_pdf
+                )
+                should_open = should_open or (
+                    auto_open_kind == "image" and settings.auto_open_images
                 )
                 if should_open:
                     QDesktopServices.openUrl(QUrl.fromLocalFile(path))
@@ -404,6 +427,11 @@ class DownloadManager:
             return
 
         if state == QWebEngineDownloadRequest.DownloadState.DownloadCancelled:
+            if meta.get("suppress_terminal"):
+                DownloadManager._release_download(download)
+                DownloadManager._drain_queue()
+                return
+
             status = meta.get("terminal_override") or "cancelled"
             DownloadManager._record_terminal(download, status)
             DownloadManager._release_download(download)
@@ -470,8 +498,7 @@ class DownloadManager:
         except RuntimeError:
             reason = ""
 
-        DownloadManager._terminal_records.insert(
-            0,
+        DownloadManager._terminal_records.append(
             {
                 "key": f"terminal-{time.monotonic_ns()}",
                 "path": path,
@@ -492,7 +519,12 @@ class DownloadManager:
                 "resumable": False,
                 "live": False,
                 "sequence": meta.get("sequence", 0),
+                "started_at": meta.get("started_at"),
             },
+        )
+        DownloadManager._terminal_records.sort(
+            key=lambda item: item.get("sequence", 0),
+            reverse=True,
         )
         del DownloadManager._terminal_records[
             DownloadManager.MAX_SESSION_RECORDS:
@@ -544,26 +576,26 @@ class DownloadManager:
 
     @staticmethod
     def download_items():
-        items = []
+        session_items = []
         live_paths = set()
 
-        live_downloads = sorted(
-            tuple(DownloadManager._active_downloads),
-            key=lambda item: (
-                DownloadManager._meta(item) or {}
-            ).get("sequence", 0),
-            reverse=True,
-        )
-        for download in live_downloads:
+        for download in tuple(DownloadManager._active_downloads):
             item = DownloadManager._snapshot(download)
             if item is None:
                 continue
-            items.append(item)
+            session_items.append(item)
             if item["path"]:
                 live_paths.add(os.path.normcase(item["path"]))
 
-        items.extend(DownloadManager._terminal_records)
+        session_items.extend(
+            dict(record) for record in DownloadManager._terminal_records
+        )
+        session_items.sort(
+            key=lambda item: item.get("sequence", 0),
+            reverse=True,
+        )
 
+        items = list(session_items)
         terminal_paths = {
             os.path.normcase(item["path"])
             for item in DownloadManager._terminal_records
@@ -585,7 +617,8 @@ class DownloadManager:
                     "reason": "",
                     "resumable": False,
                     "live": False,
-                    "sequence": -index,
+                    "sequence": -(index + 1),
+                    "started_at": None,
                 }
             )
 
@@ -648,6 +681,7 @@ class DownloadManager:
             "resumable": resumable,
             "live": True,
             "sequence": meta.get("sequence", 0),
+            "started_at": meta.get("started_at"),
         }
 
     @staticmethod
@@ -707,6 +741,41 @@ class DownloadManager:
         return count, max(0, min(99, percent))
 
     @staticmethod
+    def progress_indicator():
+        """Return count, percent and whether the compact badge should show %."""
+        items = [
+            item
+            for item in DownloadManager.download_items()
+            if item.get("live")
+            and item.get("status")
+            in {"active", "paused", "queued", "interrupted", "requested"}
+        ]
+        if not items:
+            return 0, None, False
+
+        count, percent = DownloadManager.progress_summary()
+        totals = [item.get("total", -1) for item in items]
+        if any(total <= 0 for total in totals):
+            return count, None, False
+
+        total_bytes = sum(totals)
+        started_at = [
+            item.get("started_at")
+            for item in items
+            if item.get("started_at") is not None
+        ]
+        if not started_at:
+            return count, percent, False
+
+        elapsed = time.monotonic() - min(started_at)
+        show_percent = (
+            total_bytes >= DownloadManager.PROGRESS_PERCENT_MIN_BYTES
+            and elapsed >= DownloadManager.PROGRESS_PERCENT_MIN_SECONDS
+            and percent is not None
+        )
+        return count, percent, show_percent
+
+    @staticmethod
     def recent_downloads():
         recent = SettingsManager.get(
             DownloadManager._RECENT_DOWNLOADS_KEY,
@@ -737,14 +806,14 @@ class DownloadManager:
         download_events.items_changed.emit()
 
     @staticmethod
-    def supports_auto_open(
+    def auto_open_kind(
         mime_type: str,
         file_name: str,
         path: str | None = None,
-    ) -> bool:
-        """Allow auto-open only for verified PDF and raster image files."""
+    ) -> str | None:
+        """Return pdf/image only for verified safe automatic-open content."""
         if not path or not os.path.isfile(path):
-            return False
+            return None
 
         try:
             detected = QMimeDatabase().mimeTypeForFile(
@@ -753,16 +822,16 @@ class DownloadManager:
             ).name()
         except Exception:
             logger.exception("Failed to inspect downloaded file MIME type")
-            return False
+            return None
 
         detected = (detected or "").split(";", 1)[0].strip().lower()
         allowed_extensions = DownloadManager.SAFE_AUTO_OPEN_TYPES.get(detected)
         if not allowed_extensions:
-            return False
+            return None
 
         extension = os.path.splitext(file_name or path)[1].lower()
         if extension not in allowed_extensions:
-            return False
+            return None
 
         # A conflicting non-generic server MIME is suspicious. Empty/generic
         # values are tolerated because content sniffing above is authoritative.
@@ -776,9 +845,21 @@ class DownloadManager:
             "application/unknown",
         }
         if reported not in generic and reported != detected:
-            return False
+            return None
 
-        return True
+        return "pdf" if detected == "application/pdf" else "image"
+
+    @staticmethod
+    def supports_auto_open(
+        mime_type: str,
+        file_name: str,
+        path: str | None = None,
+    ) -> bool:
+        return DownloadManager.auto_open_kind(
+            mime_type,
+            file_name,
+            path,
+        ) is not None
 
     @staticmethod
     def set_download_target(
