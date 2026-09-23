@@ -4998,3 +4998,15 @@ msgstr "WhatsApp többes letöltési engedély"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "A megjegyzett engedélyezési vagy tiltási döntés törlése az ismételt WhatsApp-letöltésekhez."
+
+msgid "Automatically open PDFs"
+msgstr "PDF-ek automatikus megnyitása"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "A befejezett PDF-letöltések megnyitása a rendszer alapértelmezett alkalmazásával."
+
+msgid "Automatically open images"
+msgstr "Képek automatikus megnyitása"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "A befejezett képletöltések megnyitása a rendszer alapértelmezett alkalmazásával."
