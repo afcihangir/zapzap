@@ -252,6 +252,11 @@ gráfica real.
     atividade sem redimensionamento do botão. Em um download conhecido de pelo
     menos 10 MiB que dure mais de cinco segundos, confirme a troca para a
     porcentagem sem tremor ou mudança do tamanho externo do botão.
+15. Em Linux, Windows e macOS, baixe pelo menos PDF, imagem, arquivo compactado
+    e um tipo genérico. Compare com o gerenciador de arquivos do sistema:
+    ZapZap deve usar o ícone nativo do tipo/associação, sem gerar miniatura do
+    conteúdo. Para um item ainda em fila, aceite fallback genérico apenas
+    quando a plataforma não fornecer um ícone específico para a extensão.
 
 ## Validação manual do proxy estrito
 
