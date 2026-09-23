@@ -78,14 +78,23 @@ class LanguageDownloadSettingsView(SettingsPage):
         row.control.layout().addWidget(self.btn_restore_path_download)
         card.add_row(row)
 
-        self.auto_open_media_row = SettingsSwitchRow(
-            _("Automatically open PDFs and images"),
+        self.auto_open_pdf_row = SettingsSwitchRow(
+            _("Automatically open PDFs"),
             _(
-                "Open completed PDF and image downloads with the system "
-                "default application."
+                "Open completed PDF downloads with the system default "
+                "application."
             ),
         )
-        card.add_row(self.auto_open_media_row)
+        card.add_row(self.auto_open_pdf_row)
+
+        self.auto_open_images_row = SettingsSwitchRow(
+            _("Automatically open images"),
+            _(
+                "Open completed image downloads with the system default "
+                "application."
+            ),
+        )
+        card.add_row(self.auto_open_images_row)
 
         self.reset_download_permissions_row = SettingsActionRow(
             _("WhatsApp multiple-download permission"),
