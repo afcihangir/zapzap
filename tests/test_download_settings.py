@@ -3,6 +3,7 @@
 from pathlib import Path
 import os
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -66,11 +67,23 @@ class DownloadSettingsTests(TemporarySettingsTest):
             DownloadBehavior.DIALOG,
         )
 
-    def test_auto_open_media_is_persisted(self):
+    def test_pdf_and_image_auto_open_settings_are_independent(self):
         settings = DownloadSettings()
-        settings.auto_open_media = True
+        settings.auto_open_pdf = True
+        settings.auto_open_images = False
 
-        self.assertTrue(DownloadSettings().auto_open_media)
+        reloaded = DownloadSettings()
+        self.assertTrue(reloaded.auto_open_pdf)
+        self.assertFalse(reloaded.auto_open_images)
+
+    def test_legacy_auto_open_setting_migrates_to_both_switches(self):
+        SettingsManager.set("downloads/auto_open_media", True)
+
+        settings = DownloadSettings()
+
+        self.assertTrue(settings.auto_open_pdf)
+        self.assertTrue(settings.auto_open_images)
+        self.assertFalse(SettingsManager.contains("downloads/auto_open_media"))
 
     def test_whatsapp_multiple_download_permission_defaults_to_ask(self):
         settings = DownloadSettings()
@@ -228,6 +241,7 @@ class FakeDownload:
         self._name = name
         self._directory = directory
         self._finished = finished
+        self._cancelled = False
 
     def state(self):
         return self._state
@@ -255,6 +269,10 @@ class FakeDownload:
 
     def interruptReasonString(self):
         return ""
+
+    def cancel(self):
+        self._cancelled = True
+        self._state = QWebEngineDownloadRequest.DownloadState.DownloadCancelled
 
 
 class DownloadQueueTests(unittest.TestCase):
@@ -332,6 +350,87 @@ class DownloadQueueTests(unittest.TestCase):
 
         self.assertEqual(DownloadManager._active_download_count(), 5)
 
+    def test_dismissed_unstarted_download_is_not_recorded(self):
+        download = FakeDownload(
+            0,
+            100,
+            state=QWebEngineDownloadRequest.DownloadState.DownloadRequested,
+            name="dismissed.pdf",
+        )
+        self.track(download, sequence=1)
+
+        DownloadManager._discard_unstarted_download(download)
+        DownloadManager._handle_state(
+            download,
+            QWebEngineDownloadRequest.DownloadState.DownloadCancelled,
+        )
+
+        self.assertEqual(DownloadManager._terminal_records, [])
+        self.assertNotIn(download, DownloadManager._active_downloads)
+
+    def test_terminal_state_keeps_original_sequence_position(self):
+        older = FakeDownload(10, 100, name="older.bin")
+        newer = FakeDownload(20, 100, name="newer.bin")
+        self.track(older, sequence=1)
+        self.track(newer, sequence=2)
+
+        DownloadManager._record_terminal(older, "cancelled")
+        DownloadManager._release_download(older)
+
+        items = DownloadManager.download_items()
+        self.assertEqual(items[0]["name"], "newer.bin")
+        self.assertEqual(items[1]["name"], "older.bin")
+        self.assertEqual(items[1]["status"], "cancelled")
+
+    def test_progress_percent_badge_waits_for_large_slow_download(self):
+        download = FakeDownload(
+            5 * 1024 * 1024,
+            20 * 1024 * 1024,
+            name="large.bin",
+        )
+        self.track(download, sequence=1)
+        DownloadManager._download_meta[id(download)]["started_at"] = (
+            time.monotonic() - 6
+        )
+
+        count, percent, show_percent = DownloadManager.progress_indicator()
+
+        self.assertEqual(count, 1)
+        self.assertEqual(percent, 25)
+        self.assertTrue(show_percent)
+
+    def test_progress_percent_badge_stays_hidden_for_small_or_fast_download(self):
+        small = FakeDownload(
+            1 * 1024 * 1024,
+            5 * 1024 * 1024,
+            name="small.bin",
+        )
+        self.track(small, sequence=1)
+        DownloadManager._download_meta[id(small)]["started_at"] = (
+            time.monotonic() - 10
+        )
+        self.assertEqual(
+            DownloadManager.progress_indicator(),
+            (1, 20, False),
+        )
+
+        DownloadManager._active_downloads = []
+        DownloadManager._download_meta = {}
+
+        fast = FakeDownload(
+            5 * 1024 * 1024,
+            20 * 1024 * 1024,
+            name="fast.bin",
+        )
+        self.track(fast, sequence=2)
+        DownloadManager._download_meta[id(fast)]["started_at"] = (
+            time.monotonic() - 1
+        )
+        self.assertEqual(
+            DownloadManager.progress_indicator(),
+            (1, 25, False),
+        )
+
     def test_queued_item_is_exposed_as_queued(self):
         queued = FakeDownload(
             0,
@@ -378,6 +477,14 @@ class DownloadAutoOpenTypeTests(unittest.TestCase):
                     path,
                 )
             )
+            self.assertEqual(
+                DownloadManager.auto_open_kind(
+                    "application/pdf",
+                    os.path.basename(path),
+                    path,
+                ),
+                "pdf",
+            )
         finally:
             os.unlink(path)
 
@@ -393,6 +500,14 @@ class DownloadAutoOpenTypeTests(unittest.TestCase):
                     os.path.basename(path),
                     path,
                 )
+            )
+            self.assertEqual(
+                DownloadManager.auto_open_kind(
+                    "image/png",
+                    os.path.basename(path),
+                    path,
+                ),
+                "image",
             )
         finally:
             os.unlink(path)
