@@ -214,7 +214,12 @@ class DownloadNamingSecurityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             with tempfile.TemporaryDirectory() as outside:
                 link = os.path.join(directory, "report.pdf")
-                os.symlink(os.path.join(outside, "outside.pdf"), link)
+                try:
+                    os.symlink(os.path.join(outside, "outside.pdf"), link)
+                except (OSError, NotImplementedError) as error:
+                    self.skipTest(
+                        f"symlink creation is unavailable: {error}"
+                    )
 
                 with self.assertRaises(ValueError):
                     DownloadNamingService.safe_download_target(
