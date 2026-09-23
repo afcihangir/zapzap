@@ -48,7 +48,7 @@ class SysTrayManager:
         # DoubleClick on macOS.
         self._activation_timer = QTimer(self._tray)
         self._activation_timer.setSingleShot(True)
-        self._activation_timer.timeout.connect(self._commit_single_click)
+        self._activation_timer.timeout.connect(self._show_tray_menu)
 
         self._setup_connections()
 
@@ -89,36 +89,44 @@ class SysTrayManager:
         if main_window is not None:
             main_window.show_window()
 
-    def _commit_single_click(self):
-        self._toggle_bound_window()
+    def _show_tray_menu(self):
+        self._trayMenu.popup(QCursor.pos())
+
+    def _schedule_tray_menu(self):
+        application = QApplication.instance()
+        interval = (
+            application.doubleClickInterval()
+            if application is not None
+            else 400
+        )
+        self._activation_timer.start(max(1, int(interval)))
 
     def _on_tray_activated(self, reason):
         activation = QSystemTrayIcon.ActivationReason
 
-        if reason == activation.Context:
-            self._activation_timer.stop()
-            self._trayMenu.popup(QCursor.pos())
-            return
-
         if reason == activation.DoubleClick:
-            # A double click may be preceded by a Trigger on some platforms.
-            # Cancel the delayed single-click action so the window toggles
-            # exactly once for the whole double-click gesture.
+            # A double click is often preceded by a primary-click activation.
+            # Cancel its delayed menu so the gesture only toggles the window.
             self._activation_timer.stop()
             self._toggle_bound_window()
             return
 
-        if reason == activation.Trigger:
-            application = QApplication.instance()
-            interval = (
-                application.doubleClickInterval()
-                if application is not None
-                else 400
-            )
-            self._activation_timer.start(max(1, int(interval)))
+        if reason == activation.Context:
+            self._activation_timer.stop()
+            self._show_tray_menu()
             return
 
-        # Unknown and middle-click activations intentionally do nothing.
+        if reason in {
+            activation.Trigger,
+            activation.Unknown,
+        }:
+            # Delay the menu just long enough to distinguish a real single
+            # click from the first half of a double click. Some Linux tray
+            # implementations report primary activation as Unknown.
+            self._schedule_tray_menu()
+            return
+
+        # Middle click intentionally does nothing.
 
     @classmethod
     def bind_window(cls, main_window):
