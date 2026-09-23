@@ -31,11 +31,18 @@ releases and the AppStream metadata.
   queues excess requests. Paused transfers do not occupy an active slot.
 - Added download behavior preferences for preserving the existing confirmation
   dialog, saving directly to the selected folder, or asking for a destination
-  every time, plus optional automatic opening of completed PDF and raster-image
-  files with the system default application. Auto-open remains disabled by
-  default and requires verified file content, a compatible safe extension and
-  no conflicting server MIME type. Download names and final target paths are
-  sanitized/canonicalized to prevent directory traversal and symlink escape.
+  every time, plus independent opt-in automatic opening for completed PDFs and
+  raster images with the system default applications. Both auto-open switches
+  remain disabled by default and require verified file content, a compatible
+  safe extension and no conflicting server MIME type. Download names and final
+  target paths are sanitized/canonicalized to prevent directory traversal and
+  symlink escape.
+- Kept the download menu stable during fast transfers: unstarted requests
+  dismissed from the save dialog no longer appear as cancelled, terminal states
+  retain their original request position, long names are middle-elided while
+  preserving the extension, and the fixed-size download buttons use a spinner
+  for short/small transfers. A percentage appears only after five seconds when
+  the known aggregate size is at least 10 MiB.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
