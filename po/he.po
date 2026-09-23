@@ -4890,3 +4890,15 @@ msgstr "הרשאה להורדות מרובות של WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "נקה את ההחלטה השמורה לאשר או לחסום הורדות חוזרות של WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "פתח קובצי PDF אוטומטית"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "פתח הורדות PDF שהושלמו באמצעות יישום ברירת המחדל של המערכת."
+
+msgid "Automatically open images"
+msgstr "פתח תמונות אוטומטית"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "פתח הורדות תמונה שהושלמו באמצעות יישום ברירת המחדל של המערכת."
