@@ -741,38 +741,42 @@ class DownloadManager:
 
     @staticmethod
     def progress_indicator():
-        """Return count, percent and whether the compact badge should show %."""
+        """Return active count, weighted percent and compact badge mode."""
         items = [
             item
             for item in DownloadManager.download_items()
-            if item.get("live")
-            and item.get("status")
-            in {"active", "paused", "queued", "interrupted"}
+            if item.get("live") and item.get("status") == "active"
         ]
         if not items:
             return 0, None, False
 
-        count, percent = DownloadManager.progress_summary()
-        totals = [item.get("total", -1) for item in items]
-        if any(total <= 0 for total in totals):
-            return count, None, False
+        received_total = 0
+        expected_total = 0
+        for item in items:
+            received = item.get("received", -1)
+            total = item.get("total", -1)
+            if total <= 0 or received < 0:
+                return len(items), None, False
+            received_total += min(received, total)
+            expected_total += total
 
-        total_bytes = sum(totals)
+        percent = round((received_total * 100) / expected_total)
+        percent = max(0, min(99, percent))
+
         started_at = [
             item.get("started_at")
             for item in items
             if item.get("started_at") is not None
         ]
         if not started_at:
-            return count, percent, False
+            return len(items), percent, False
 
         elapsed = time.monotonic() - min(started_at)
         show_percent = (
-            total_bytes >= DownloadManager.PROGRESS_PERCENT_MIN_BYTES
+            expected_total >= DownloadManager.PROGRESS_PERCENT_MIN_BYTES
             and elapsed >= DownloadManager.PROGRESS_PERCENT_MIN_SECONDS
-            and percent is not None
         )
-        return count, percent, show_percent
+        return len(items), percent, show_percent
 
     @staticmethod
     def recent_downloads():
