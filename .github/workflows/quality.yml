@@ -57,3 +57,6 @@ jobs:
 
       - name: Validate download behavior
         run: python -m unittest discover -s tests -p "test_download_settings.py" -v
+
+      - name: Validate tray behavior
+        run: python -m unittest discover -s tests -p "test_taskbar_badge.py" -v
