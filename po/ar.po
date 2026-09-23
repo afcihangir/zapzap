@@ -4907,3 +4907,15 @@ msgstr "إذن WhatsApp للتنزيلات المتعددة"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "امسح قرار السماح أو الحظر المحفوظ للتنزيلات المتكررة من WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "فتح ملفات PDF تلقائيًا"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "افتح تنزيلات PDF المكتملة باستخدام التطبيق الافتراضي للنظام."
+
+msgid "Automatically open images"
+msgstr "فتح الصور تلقائيًا"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "افتح تنزيلات الصور المكتملة باستخدام التطبيق الافتراضي للنظام."
