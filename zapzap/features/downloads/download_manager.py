@@ -718,7 +718,6 @@ class DownloadManager:
                 "paused",
                 "queued",
                 "interrupted",
-                "requested",
             }:
                 continue
 
@@ -748,7 +747,7 @@ class DownloadManager:
             for item in DownloadManager.download_items()
             if item.get("live")
             and item.get("status")
-            in {"active", "paused", "queued", "interrupted", "requested"}
+            in {"active", "paused", "queued", "interrupted"}
         ]
         if not items:
             return 0, None, False
