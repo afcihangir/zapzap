@@ -4969,3 +4969,15 @@ msgstr "Дозвіл на кілька завантажень WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Очистити збережене рішення про дозвіл або блокування повторних завантажень WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "Автоматично відкривати PDF"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Відкривати завершені завантаження PDF системною програмою за замовчуванням."
+
+msgid "Automatically open images"
+msgstr "Автоматично відкривати зображення"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Відкривати завершені завантаження зображень системною програмою за замовчуванням."
