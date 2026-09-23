@@ -4951,3 +4951,15 @@ msgstr "WhatsApp çoklu indirme izni"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Art arda WhatsApp indirmeleri için hatırlanan izin verme veya engelleme kararını temizle."
+
+msgid "Automatically open PDFs"
+msgstr "PDF'leri otomatik aç"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Tamamlanan PDF indirmelerini sistemin varsayılan uygulamasıyla aç."
+
+msgid "Automatically open images"
+msgstr "Görselleri otomatik aç"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Tamamlanan görsel indirmelerini sistemin varsayılan uygulamasıyla aç."
