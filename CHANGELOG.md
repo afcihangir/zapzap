@@ -16,13 +16,13 @@ releases and the AppStream metadata.
 ### Added
 
 - Added shared recent-download menus to the sidebar and right side of the
-  menubar, including native file-type icons, per-item progress bars and
-  percentages, queued/paused/interrupted/cancelled/blocked/completed states,
-  pause/resume/cancel controls, per-item folder access, history clearing, the
-  downloads-folder shortcut, localized labels, and a five-second automatic
-  popup after direct downloads. While downloads are active, both download
-  buttons show a byte-weighted aggregate percentage with a reduced icon and
-  play a short completion animation when the active queue finishes.
+  menubar, including native platform file-type icons, per-item progress bars
+  and percentages, queued/paused/interrupted/cancelled/blocked/completed
+  states, pause/resume/cancel controls, per-item folder access, history
+  clearing, the downloads-folder shortcut, localized labels, and a five-second
+  automatic popup after direct downloads. File icons are resolved through Qt's
+  native file-icon provider on Linux, Windows and macOS, with MIME-theme and
+  generic-system fallbacks rather than bundled type artwork.
 - Added Chrome-style repeated-download protection for WhatsApp: only the first
   download request in an application session is implicitly allowed; every
   later request requires the shared ask/allow/block permission, so spacing
@@ -42,7 +42,11 @@ releases and the AppStream metadata.
   retain their original request position, long names are middle-elided while
   preserving the extension, and the fixed-size download buttons use a spinner
   for short/small transfers. A percentage appears only after five seconds when
-  the known aggregate size is at least 10 MiB.
+  the known aggregate size is at least 10 MiB, without resizing the button or
+  icon.
+- Added a Linux/Windows/macOS quality matrix for the download regression suite
+  so queueing, path hardening, settings, MIME validation and presentation
+  behavior are exercised on all maintained desktop operating systems.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
