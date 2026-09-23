@@ -13,7 +13,7 @@ from PyQt6.QtCore import (
     QUrl,
     pyqtSignal,
 )
-from PyQt6.QtGui import QDesktopServices, QIcon
+from PyQt6.QtGui import QAbstractFileIconProvider, QDesktopServices, QIcon
 from PyQt6.QtWidgets import (
     QFileIconProvider,
     QHBoxLayout,
@@ -34,17 +34,18 @@ from zapzap.features.downloads.download_manager import DownloadManager
 
 
 class DownloadRow(QWidget):
-    """Chrome-like download row with system file icon and live status."""
+    """Chrome-like download row with the platform's native file-type icon."""
 
     open_requested = pyqtSignal(str)
     folder_requested = pyqtSignal(str)
+
+    _file_icon_provider = QFileIconProvider()
 
     def __init__(self, item: dict, parent=None):
         super().__init__(parent)
         self.item = dict(item)
         self.key = item.get("key")
         self.path = item.get("path", "")
-        self._file_icon_provider = QFileIconProvider()
 
         self.setMinimumWidth(360)
         self.setMaximumWidth(520)
@@ -192,22 +193,61 @@ class DownloadRow(QWidget):
             f"{extension}"
         )
 
-    def _system_file_icon(self, path: str, name: str) -> QIcon:
-        if path and os.path.exists(path):
-            icon = self._file_icon_provider.icon(QFileInfo(path))
+    @classmethod
+    def _system_file_icon(cls, path: str, name: str) -> QIcon:
+        """Resolve the native file-type icon without generating a preview."""
+        provider = cls._file_icon_provider
+        candidate = path or name
+
+        # Existing files get the exact icon chosen by the host OS/desktop.
+        # This is the primary path for completed and most active downloads.
+        if path and QFileInfo.exists(path):
+            icon = provider.icon(QFileInfo(path))
             if not icon.isNull():
                 return icon
 
+        # Ask the native provider for the filename/extension even when the
+        # target does not exist yet (queued/requested downloads). Some native
+        # backends can resolve the associated application/type from this.
+        native_candidate = (
+            provider.icon(QFileInfo(candidate))
+            if candidate
+            else QIcon()
+        )
+        generic_native = provider.icon(
+            QAbstractFileIconProvider.IconType.File
+        )
+        if (
+            not native_candidate.isNull()
+            and (
+                generic_native.isNull()
+                or native_candidate.cacheKey() != generic_native.cacheKey()
+            )
+        ):
+            return native_candidate
+
+        # Freedesktop MIME icons are especially useful on Linux. On Qt 6.7+
+        # QIcon can also access native icon libraries on Windows and macOS, so
+        # these names are a safe cross-platform fallback when available.
         mime = QMimeDatabase().mimeTypeForFile(
-            name or path,
+            name or candidate,
             QMimeDatabase.MatchMode.MatchExtension,
         )
         if mime.isValid():
-            icon = QIcon.fromTheme(mime.iconName())
-            if not icon.isNull():
-                return icon
+            for icon_name in (mime.iconName(), mime.genericIconName()):
+                if not icon_name:
+                    continue
+                icon = QIcon.fromTheme(icon_name)
+                if not icon.isNull():
+                    return icon
 
-        return self._file_icon_provider.icon(QFileInfo(path or name))
+        # Never invent a bundled PDF/image icon: if the platform has no
+        # type-specific icon, use its own generic file icon.
+        if not native_candidate.isNull():
+            return native_candidate
+        if not generic_native.isNull():
+            return generic_native
+        return QIcon()
 
     def _status_standard_icon(self, status: str):
         mapping = {
