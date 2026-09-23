@@ -53,7 +53,7 @@ class SysTrayManager:
 
         self._activation_timer = QTimer(self._tray)
         self._activation_timer.setSingleShot(True)
-        self._activation_timer.timeout.connect(self._show_tray_menu)
+        self._activation_timer.timeout.connect(self._toggle_bound_window)
 
         self._setup_connections()
 
@@ -99,7 +99,7 @@ class SysTrayManager:
             return
         self._trayMenu.popup(QCursor.pos())
 
-    def _schedule_tray_menu(self):
+    def _schedule_primary_toggle(self):
         application = QApplication.instance()
         interval = (
             application.doubleClickInterval()
@@ -111,13 +111,19 @@ class SysTrayManager:
     def _on_tray_activated(self, reason):
         activation = QSystemTrayIcon.ActivationReason
 
-        if reason == activation.DoubleClick:
-            # A double click is often preceded by a primary-click activation.
-            # Cancel/close its menu so the gesture only toggles the window.
-            self._activation_timer.stop()
-            if self._trayMenu.isVisible():
-                self._trayMenu.close()
-            self._toggle_bound_window()
+        if self._native_context_menu:
+            # StatusNotifier/AppIndicator hosts own the context menu on Linux.
+            # Do not popup a second QMenu from the application: doing so can
+            # leave the shell cursor busy while it resolves two menu requests.
+            if reason in {
+                activation.Trigger,
+                activation.DoubleClick,
+            }:
+                # GNOME AppIndicator commonly exposes its "activate" gesture
+                # as Trigger even when that gesture came from a double click.
+                if self._trayMenu.isVisible():
+                    self._trayMenu.close()
+                self._toggle_bound_window()
             return
 
         if reason == activation.Context:
@@ -125,17 +131,19 @@ class SysTrayManager:
             self._show_tray_menu()
             return
 
-        if reason in {
-            activation.Trigger,
-            activation.Unknown,
-        }:
-            # Delay the menu just long enough to distinguish a real single
-            # click from the first half of a double click. Some Linux tray
-            # implementations report primary activation as Unknown.
-            self._schedule_tray_menu()
+        if reason == activation.DoubleClick:
+            # Cancel the delayed first click so a double click toggles once.
+            self._activation_timer.stop()
+            self._toggle_bound_window()
             return
 
-        # Middle click intentionally does nothing.
+        if reason == activation.Trigger:
+            # Delay a normal primary click just enough to distinguish it from
+            # a double click on Windows/macOS and non-SNI tray backends.
+            self._schedule_primary_toggle()
+            return
+
+        # Unknown and middle-click activations intentionally do nothing.
 
     @classmethod
     def bind_window(cls, main_window):
