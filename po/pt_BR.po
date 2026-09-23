@@ -5429,3 +5429,15 @@ msgstr "Permissão para vários downloads do WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Limpar a decisão lembrada de permitir ou bloquear downloads repetidos do WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "Abrir PDFs automaticamente"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Abrir downloads de PDF concluídos com o aplicativo padrão do sistema."
+
+msgid "Automatically open images"
+msgstr "Abrir imagens automaticamente"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Abrir downloads de imagens concluídos com o aplicativo padrão do sistema."
