@@ -82,6 +82,10 @@ class WebView(QWebEngineView):
 
         self._web_channel_bridge = None
 
+        # In-memory only: last directory chosen with Save As for this
+        # conversation. Never persisted.
+        self.last_download_directory = None
+
         self._reload_timer = QTimer(self)
         self._reload_timer.setSingleShot(True)
         self._reload_timer.timeout.connect(self.load_page)
@@ -513,6 +517,7 @@ class WebView(QWebEngineView):
 
     def close_conversation(self):
         """Simula o pressionamento da tecla 'Escape' na página."""
+        self.last_download_directory = None
         if self.user.enable and self.whatsapp_page:
             self.whatsapp_page.close_conversation()
 
@@ -622,6 +627,7 @@ class WebView(QWebEngineView):
 
     def _teardown_webengine(self, clear_cache: bool = False):
         """Destrói objetos Qt associados à WebEngine de forma ordenada."""
+        self.last_download_directory = None
         self._stop_timers()
         self._save_zoom_factor()
         self.stop()
