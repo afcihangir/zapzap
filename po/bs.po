@@ -4947,3 +4947,15 @@ msgstr "Dozvola za višestruka WhatsApp preuzimanja"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Obriši zapamćenu odluku dozvole ili blokiranja za ponovljena WhatsApp preuzimanja."
+
+msgid "Automatically open PDFs"
+msgstr "Automatski otvaraj PDF datoteke"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Otvaraj završena PDF preuzimanja zadanim sistemskim programom."
+
+msgid "Automatically open images"
+msgstr "Automatski otvaraj slike"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Otvaraj završena preuzimanja slika zadanim sistemskim programom."
