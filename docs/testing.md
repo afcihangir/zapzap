@@ -120,7 +120,7 @@ documente o que ele protege.
 | `test_settings_radio_group.py` | divisores do grupo de rádio em `ui.components` |
 | `test_software_video_decoding.py` | presets, flags Chromium de renderização/strict proxy, persistência e ordem do bootstrap |
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
-| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta, clique simples/duplo, menu apenas no clique de contexto e compatibilidade com Qt anterior |
+| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta, menu em clique simples/contexto, toggle em duplo clique e compatibilidade com Qt anterior |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo, seleção do backend gráfico, reinício e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
 | `test_update_checker.py` | versões, política de builds, respostas/falhas assíncronas, metadados seguros e popover acessível compartilhado entre sidebar e Sobre |
@@ -291,16 +291,16 @@ isolamento estrito e que a flag não é aplicada.
 
 ## Validação manual da bandeja do sistema
 
-1. Com a janela oculta, clique uma vez com o botão principal no ícone do ZapZap
-   e confirme que a janela é restaurada.
-2. Clique novamente uma vez e confirme que a janela volta para o segundo plano.
-3. Repita com um duplo clique rápido: a janela deve alternar apenas uma vez, sem
-   abrir o menu e sem voltar imediatamente ao estado anterior.
-4. Clique com o botão direito/contexto e confirme que apenas o menu da bandeja
-   aparece; a visibilidade da janela não deve mudar.
-5. Repita em Linux, Windows e macOS. Em Linux, registre qualquer limitação do
-   shell/extensão de bandeja, pois alguns ambientes não expõem todos os motivos
-   de ativação do QSystemTrayIcon.
+1. Clique uma vez com o botão principal no ícone do ZapZap e confirme que o
+   menu da bandeja aparece sem alterar a visibilidade da janela.
+2. Clique com o botão direito/contexto e confirme que o mesmo menu aparece.
+3. Dê um duplo clique rápido com o botão principal e confirme que o menu não
+   permanece aberto e a janela alterna exatamente uma vez entre visível e
+   oculta.
+4. Repita o duplo clique com a janela no estado oposto e confirme o retorno.
+5. Repita em Linux, Windows e macOS. Em Linux/StatusNotifier, valide também o
+   menu nativo do shell, pois alguns ambientes consomem clique simples/contexto
+   antes de emitir `QSystemTrayIcon.activated`.
 
 ## Validação manual do bloqueio do WhatsApp Web
 
