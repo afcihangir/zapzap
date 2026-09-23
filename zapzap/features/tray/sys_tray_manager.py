@@ -46,7 +46,7 @@ class SysTrayManager:
         # only for Context activations. This prevents platform tray backends
         # from treating a primary click as a menu request and also preserves
         # DoubleClick on macOS.
-        self._activation_timer = QTimer()
+        self._activation_timer = QTimer(self._tray)
         self._activation_timer.setSingleShot(True)
         self._activation_timer.timeout.connect(self._commit_single_click)
 
@@ -124,6 +124,7 @@ class SysTrayManager:
     def bind_window(cls, main_window):
         """Reconnect tray actions to the current MainWindow instance."""
         instance = cls.instance()
+        instance._activation_timer.stop()
         instance._disconnect_window_actions()
         instance._bound_window = main_window
         instance._tray.activated.connect(instance._on_tray_activated)
