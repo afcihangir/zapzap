@@ -452,6 +452,37 @@ class DownloadQueueTests(unittest.TestCase):
 
 class DownloadMenuPresentationTests(unittest.TestCase):
 
+    class _FakeIcon:
+        def __init__(self, key):
+            self.key = key
+
+        def isNull(self):
+            return False
+
+        def cacheKey(self):
+            return self.key
+
+    class _FakeProvider:
+        def __init__(self):
+            self.type_icon = DownloadMenuPresentationTests._FakeIcon(2)
+            self.generic_icon = DownloadMenuPresentationTests._FakeIcon(1)
+
+        def icon(self, value):
+            if hasattr(value, "fileName"):
+                return self.type_icon
+            return self.generic_icon
+
+    def test_native_file_type_icon_is_preferred_for_missing_target(self):
+        previous = DownloadRow._file_icon_provider
+        provider = self._FakeProvider()
+        DownloadRow._file_icon_provider = provider
+        try:
+            icon = DownloadRow._system_file_icon("", "report.pdf")
+        finally:
+            DownloadRow._file_icon_provider = previous
+
+        self.assertIs(icon, provider.type_icon)
+
     def test_long_name_is_middle_elided_and_keeps_extension(self):
         name = (
             "denemedosyasi-cok-uzun-bir-dosya-adi-"
