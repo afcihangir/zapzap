@@ -171,6 +171,27 @@ class DownloadRow(QWidget):
         button.setToolTip(tooltip)
         return button
 
+    @staticmethod
+    def _elide_file_name(name: str, max_length: int = 38) -> str:
+        """Elide the middle while preserving the extension and tail."""
+        if len(name) <= max_length:
+            return name
+
+        stem, extension = os.path.splitext(name)
+        if len(extension) >= max_length - 8:
+            return f"{name[: max_length - 1]}…"
+
+        available = max_length - len(extension) - 1
+        prefix_len = max(8, int(available * 0.65))
+        suffix_len = max(4, available - prefix_len)
+        if prefix_len + suffix_len >= len(stem):
+            return name
+
+        return (
+            f"{stem[:prefix_len]}…{stem[-suffix_len:]}"
+            f"{extension}"
+        )
+
     def _system_file_icon(self, path: str, name: str) -> QIcon:
         if path and os.path.exists(path):
             icon = self._file_icon_provider.icon(QFileInfo(path))
@@ -229,7 +250,7 @@ class DownloadRow(QWidget):
         icon = self._system_file_icon(self.path, name)
         self.file_icon.setPixmap(icon.pixmap(QSize(30, 30)))
 
-        self.name_button.setText(name)
+        self.name_button.setText(self._elide_file_name(name))
         name_font = self.name_button.font()
         name_font.setStrikeOut(status in {"cancelled", "blocked"})
         self.name_button.setFont(name_font)
