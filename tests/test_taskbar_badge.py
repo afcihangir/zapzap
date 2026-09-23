@@ -4,8 +4,84 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import MagicMock, call, patch
 
+from PyQt6.QtWidgets import QSystemTrayIcon
+
 from qt_test_case import QtTestCase
 from zapzap.features.tray.sys_tray_manager import SysTrayManager
+
+
+class _FakeTimer:
+    def __init__(self):
+        self.active = False
+        self.intervals = []
+
+    def start(self, interval):
+        self.active = True
+        self.intervals.append(interval)
+
+    def stop(self):
+        self.active = False
+
+    def isActive(self):
+        return self.active
+
+
+class TrayActivationTests(QtTestCase):
+    def setUp(self):
+        self.manager = object.__new__(SysTrayManager)
+        self.manager._activation_timer = _FakeTimer()
+        self.manager._trayMenu = MagicMock()
+        self.manager._bound_window = MagicMock()
+
+    def test_single_click_schedules_one_window_toggle(self):
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.Trigger
+        )
+
+        self.assertTrue(self.manager._activation_timer.active)
+        self.manager._bound_window.show_window.assert_not_called()
+
+        self.manager._commit_single_click()
+
+        self.manager._bound_window.show_window.assert_called_once_with()
+
+    def test_double_click_cancels_pending_single_and_toggles_once(self):
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.Trigger
+        )
+        self.assertTrue(self.manager._activation_timer.active)
+
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.DoubleClick
+        )
+
+        self.assertFalse(self.manager._activation_timer.active)
+        self.manager._bound_window.show_window.assert_called_once_with()
+        self.manager._trayMenu.popup.assert_not_called()
+
+    @patch("zapzap.features.tray.sys_tray_manager.QCursor.pos")
+    def test_context_click_only_opens_tray_menu(self, cursor_pos):
+        position = object()
+        cursor_pos.return_value = position
+
+        self.manager._on_tray_activated(
+            QSystemTrayIcon.ActivationReason.Context
+        )
+
+        self.manager._trayMenu.popup.assert_called_once_with(position)
+        self.manager._bound_window.show_window.assert_not_called()
+        self.assertFalse(self.manager._activation_timer.active)
+
+    def test_middle_and_unknown_clicks_do_nothing(self):
+        for reason in (
+            QSystemTrayIcon.ActivationReason.MiddleClick,
+            QSystemTrayIcon.ActivationReason.Unknown,
+        ):
+            with self.subTest(reason=reason):
+                self.manager._on_tray_activated(reason)
+
+        self.manager._bound_window.show_window.assert_not_called()
+        self.manager._trayMenu.popup.assert_not_called()
 
 
 class TaskbarBadgeTests(QtTestCase):
