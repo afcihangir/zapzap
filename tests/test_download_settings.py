@@ -186,6 +186,14 @@ class DownloadNamingSecurityTests(unittest.TestCase):
             "_CON.pdf",
         )
 
+    def test_unicode_filename_is_limited_by_utf8_bytes(self):
+        original = ("ğ" * 180) + ".pdf"
+
+        safe = DownloadNamingService.sanitize_file_name(original)
+
+        self.assertLessEqual(len(safe.encode("utf-8")), 240)
+        self.assertTrue(safe.endswith(".pdf"))
+
     def test_safe_target_stays_inside_selected_directory(self):
         with tempfile.TemporaryDirectory() as directory:
             safe_directory, safe_name = (
