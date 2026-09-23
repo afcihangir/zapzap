@@ -105,7 +105,10 @@ class DownloadManager:
         ):
             return
 
-        if not DownloadManager._set_initial_download_parameters(download):
+        if not DownloadManager._set_initial_download_parameters(
+            download,
+            parent,
+        ):
             return
 
         DownloadManager._register_download(download)
@@ -984,8 +987,21 @@ class DownloadManager:
         )
 
     @staticmethod
-    def _set_initial_download_parameters(download) -> bool:
-        configured_path = DownloadManager.get_path()
+    def _session_directory(parent):
+        """Return the in-memory directory remembered for this conversation."""
+        directory = getattr(parent, "last_download_directory", None)
+        return (
+            directory
+            if isinstance(directory, str) and directory.strip()
+            else None
+        )
+
+    @staticmethod
+    def _set_initial_download_parameters(download, parent=None) -> bool:
+        configured_path = (
+            DownloadManager._session_directory(parent)
+            or DownloadManager.get_path()
+        )
         try:
             DownloadManager.set_download_target(
                 download,
