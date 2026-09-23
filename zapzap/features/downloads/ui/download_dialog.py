@@ -306,7 +306,7 @@ class DownloadDialog(QDialog):
             return
 
         try:
-            DownloadManager.cancel_download(id(self.download))
+            DownloadManager._discard_unstarted_download(self.download)
             self.reject()
         except RuntimeError:
             self._close_unavailable_download()
