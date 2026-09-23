@@ -866,6 +866,51 @@ class DownloadManager:
         return valid
 
     @staticmethod
+    def remove_history_item(key, path=""):
+        """Remove one finished item from ZapZap history, never from disk."""
+        for item in DownloadManager._active_downloads:
+            if DownloadManager._download_key(item) == key:
+                return False
+
+        before = len(DownloadManager._terminal_records)
+        DownloadManager._terminal_records = [
+            record
+            for record in DownloadManager._terminal_records
+            if record.get("key") != key
+        ]
+        removed = len(DownloadManager._terminal_records) != before
+
+        if path:
+            normalized = os.path.normcase(os.path.normpath(path))
+            recent = SettingsManager.get(
+                DownloadManager._RECENT_DOWNLOADS_KEY,
+                [],
+            )
+            if isinstance(recent, str):
+                recent = [recent]
+            elif not isinstance(recent, (list, tuple)):
+                recent = []
+
+            filtered = [
+                item
+                for item in recent
+                if not (
+                    isinstance(item, str)
+                    and os.path.normcase(os.path.normpath(item)) == normalized
+                )
+            ]
+            if list(recent) != filtered:
+                SettingsManager.set(
+                    DownloadManager._RECENT_DOWNLOADS_KEY,
+                    filtered,
+                )
+                removed = True
+
+        if removed:
+            download_events.items_changed.emit()
+        return removed
+
+    @staticmethod
     def clear_recent_downloads():
         SettingsManager.set(DownloadManager._RECENT_DOWNLOADS_KEY, [])
         DownloadManager._terminal_records.clear()

@@ -122,6 +122,9 @@ class MainWindowController(MainWindowView):
         self._downloads_menu.show_all_requested.connect(
             self.show_downloads_window
         )
+        self._downloads_window.settings_requested.connect(
+            self.open_download_settings
+        )
         self._download_progress_badges = {}
         self._download_activity_rings = {}
         self._download_progress_timer = QTimer(self)
@@ -673,6 +676,13 @@ class MainWindowController(MainWindowView):
         else:
             self.stackedWidget.setCurrentWidget(self.browser)
         return self.browser.show_donations()
+
+    def open_download_settings(self):
+        """Open Settings directly on the language/download settings page."""
+        self.open_settings()
+        return self.app_settings.open_page_id(
+            self.app_settings.LANGUAGE_DOWNLOADS_PAGE_ID
+        )
 
     def open_language_download_settings(self):
         """Open Settings directly on dictionary and language management."""

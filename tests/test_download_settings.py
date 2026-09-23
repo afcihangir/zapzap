@@ -388,6 +388,26 @@ class DownloadQueueTests(unittest.TestCase):
         self.assertEqual(DownloadManager._terminal_records, [])
         self.assertNotIn(download, DownloadManager._active_downloads)
 
+    def test_finished_item_can_be_removed_from_history_without_deleting_file(self):
+        DownloadManager._terminal_records = [
+            {
+                "key": "terminal-test",
+                "path": "",
+                "name": "old.pdf",
+                "status": "completed",
+                "live": False,
+                "sequence": 1,
+            }
+        ]
+
+        removed = DownloadManager.remove_history_item(
+            "terminal-test",
+            "",
+        )
+
+        self.assertTrue(removed)
+        self.assertEqual(DownloadManager._terminal_records, [])
+
     def test_terminal_state_keeps_original_sequence_position(self):
         older = FakeDownload(10, 100, name="older.bin")
         newer = FakeDownload(20, 100, name="newer.bin")

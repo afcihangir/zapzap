@@ -20,6 +20,9 @@ from PyQt6.QtGui import (
     QDesktopServices,
     QGuiApplication,
     QIcon,
+    QPainter,
+    QPen,
+    QPixmap,
 )
 from PyQt6.QtWidgets import (
     QDialog,
@@ -40,6 +43,68 @@ from zapzap.assets.icons.system_icon import SystemIcon
 from zapzap.core.theme.theme_manager import ThemeManager
 from zapzap.features.downloads.download_events import download_events
 from zapzap.features.downloads.download_manager import DownloadManager
+
+
+def _outline_icon(widget, kind: str, size: int = 20) -> QIcon:
+    """Draw a transparent outline icon using the current palette text color."""
+    pixmap = QPixmap(size, size)
+    pixmap.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    pen = QPen(widget.palette().text().color())
+    pen.setWidth(2)
+    pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+    pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
+    painter.setPen(pen)
+    painter.setBrush(Qt.BrushStyle.NoBrush)
+
+    if kind == "folder":
+        painter.drawLine(3, 6, 8, 6)
+        painter.drawLine(8, 6, 10, 8)
+        painter.drawLine(10, 8, 17, 8)
+        painter.drawLine(17, 8, 17, 16)
+        painter.drawLine(17, 16, 3, 16)
+        painter.drawLine(3, 16, 3, 6)
+    elif kind == "trash":
+        painter.drawLine(5, 6, 15, 6)
+        painter.drawLine(8, 4, 12, 4)
+        painter.drawRect(6, 7, 8, 10)
+        painter.drawLine(9, 9, 9, 15)
+        painter.drawLine(11, 9, 11, 15)
+    elif kind == "settings":
+        painter.drawEllipse(6, 6, 8, 8)
+        painter.drawEllipse(9, 9, 2, 2)
+        painter.drawLine(10, 2, 10, 5)
+        painter.drawLine(10, 15, 10, 18)
+        painter.drawLine(2, 10, 5, 10)
+        painter.drawLine(15, 10, 18, 10)
+        painter.drawLine(4, 4, 6, 6)
+        painter.drawLine(14, 14, 16, 16)
+        painter.drawLine(16, 4, 14, 6)
+        painter.drawLine(6, 14, 4, 16)
+    painter.end()
+    return QIcon(pixmap)
+
+
+def _configure_outline_button(button, tooltip: str):
+    button.setFlat(True)
+    button.setFixedSize(QSize(30, 30))
+    button.setIconSize(QSize(20, 20))
+    button.setCursor(Qt.CursorShape.PointingHandCursor)
+    button.setToolTip(tooltip)
+    button.setStyleSheet(
+        """
+        QPushButton {
+            border: 0;
+            border-radius: 15px;
+            background: transparent;
+            padding: 4px;
+        }
+        QPushButton:hover {
+            background: palette(alternate-base);
+        }
+        """
+    )
 
 
 class DownloadRow(QFrame):
@@ -145,14 +210,23 @@ class DownloadRow(QFrame):
         actions_layout.setContentsMargins(0, 0, 0, 0)
         actions_layout.setSpacing(2)
 
-        self.folder_button = self._icon_button(
-            QStyle.StandardPixmap.SP_DirOpenIcon,
-            _("Open folder"),
+        self.folder_button = QPushButton(self)
+        _configure_outline_button(
+            self.folder_button,
+            _("Show in folder"),
         )
         self.folder_button.clicked.connect(
             lambda: self.folder_requested.emit(self.path)
         )
         actions_layout.addWidget(self.folder_button)
+
+        self.remove_button = QPushButton(self)
+        _configure_outline_button(
+            self.remove_button,
+            _("Remove from download history"),
+        )
+        self.remove_button.clicked.connect(self._remove_from_history)
+        actions_layout.addWidget(self.remove_button)
 
         self.pause_button = self._icon_button(
             QStyle.StandardPixmap.SP_MediaPause,
@@ -178,6 +252,10 @@ class DownloadRow(QFrame):
         self.actions.hide()
         root.addWidget(self.actions, 0, Qt.AlignmentFlag.AlignTop)
 
+        self._refresh_outline_icons()
+        ThemeManager.instance().theme_changed.connect(
+            self._refresh_outline_icons
+        )
         self._update_from_item(self.item)
 
         self._refresh_timer = QTimer(self)
@@ -185,6 +263,14 @@ class DownloadRow(QFrame):
         self._refresh_timer.timeout.connect(self._refresh_live_item)
         if self.item.get("live"):
             self._refresh_timer.start()
+
+    def _refresh_outline_icons(self, *_args):
+        self.folder_button.setIcon(
+            _outline_icon(self.folder_button, "folder")
+        )
+        self.remove_button.setIcon(
+            _outline_icon(self.remove_button, "trash")
+        )
 
     def _icon_button(self, standard_icon, tooltip):
         button = QPushButton(self)
@@ -371,6 +457,7 @@ class DownloadRow(QFrame):
 
         live = bool(item.get("live"))
         self.folder_button.setVisible(bool(self.path))
+        self.remove_button.setVisible(not live)
         self.pause_button.setVisible(live and status == "active")
         self.resume_button.setVisible(
             live
@@ -453,6 +540,9 @@ class DownloadRow(QFrame):
 
     def _cancel(self):
         DownloadManager.cancel_download(self.key)
+
+    def _remove_from_history(self):
+        DownloadManager.remove_history_item(self.key, self.path)
 
     def enterEvent(self, event):
         self.actions.show()
@@ -576,11 +666,10 @@ class DownloadsPopover(QFrame, _DownloadsListMixin):
 
         self.open_folder_button = QPushButton(self.surface)
         self.open_folder_button.setObjectName("DownloadsHeaderButton")
-        self.open_folder_button.setFlat(True)
-        self.open_folder_button.setFixedSize(QSize(30, 30))
-        self.open_folder_button.setIconSize(QSize(18, 18))
-        self.open_folder_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.open_folder_button.setToolTip(_("Open downloads folder"))
+        _configure_outline_button(
+            self.open_folder_button,
+            _("Open downloads folder"),
+        )
         self.open_folder_button.clicked.connect(self._open_downloads_folder)
         header.addWidget(self.open_folder_button)
 
@@ -617,7 +706,7 @@ class DownloadsPopover(QFrame, _DownloadsListMixin):
         layout.addWidget(footer_separator)
 
         self.show_all_button = QPushButton(
-            f"{_('Downloads')}  →",
+            f"{_('All download history')}  →",
             self.surface,
         )
         self.show_all_button.setObjectName("DownloadsShowAllButton")
@@ -671,9 +760,7 @@ class DownloadsPopover(QFrame, _DownloadsListMixin):
 
     def _refresh_theme(self, *_args):
         self.open_folder_button.setIcon(
-            self.style().standardIcon(
-                QStyle.StandardPixmap.SP_DirOpenIcon
-            )
+            _outline_icon(self.open_folder_button, "folder")
         )
         self.update()
 
@@ -787,6 +874,8 @@ class DownloadsPopover(QFrame, _DownloadsListMixin):
 class DownloadsWindow(QDialog, _DownloadsListMixin):
     """Small modeless history window with the full retained download list."""
 
+    settings_requested = pyqtSignal()
+
     WIDTH = 540
     HEIGHT = 620
 
@@ -847,25 +936,38 @@ class DownloadsWindow(QDialog, _DownloadsListMixin):
         footer.setContentsMargins(0, 0, 0, 0)
         footer.setSpacing(8)
 
-        self.clear_button = QPushButton(
+        footer.addStretch(1)
+
+        self.clear_button = QPushButton(self)
+        self.clear_button.setObjectName("DownloadsWindowIconButton")
+        _configure_outline_button(
+            self.clear_button,
             _("Clear download history"),
-            self,
         )
-        self.clear_button.setObjectName("DownloadsWindowButton")
         self.clear_button.clicked.connect(self._clear_history)
         footer.addWidget(self.clear_button)
 
-        footer.addStretch(1)
-
-        self.open_folder_button = QPushButton(
+        self.open_folder_button = QPushButton(self)
+        self.open_folder_button.setObjectName("DownloadsWindowIconButton")
+        _configure_outline_button(
+            self.open_folder_button,
             _("Open downloads folder"),
-            self,
         )
-        self.open_folder_button.setObjectName("DownloadsWindowButton")
         self.open_folder_button.clicked.connect(
             self._open_downloads_folder
         )
         footer.addWidget(self.open_folder_button)
+
+        self.settings_button = QPushButton(self)
+        self.settings_button.setObjectName("DownloadsWindowIconButton")
+        _configure_outline_button(
+            self.settings_button,
+            _("Settings"),
+        )
+        self.settings_button.clicked.connect(
+            self._open_download_settings
+        )
+        footer.addWidget(self.settings_button)
 
         layout.addLayout(footer)
 
@@ -889,23 +991,22 @@ class DownloadsWindow(QDialog, _DownloadsListMixin):
             QFrame#DownloadRow:hover {
                 background: palette(alternate-base);
             }
-            QPushButton#DownloadsWindowButton {
-                padding: 6px 10px;
+            QPushButton#DownloadsWindowIconButton {
+                border: 0;
+                background: transparent;
             }
             """
         )
 
     def _refresh_theme(self, *_args):
-        icon_theme = SystemIcon.Type[
-            ThemeManager.get_current_color_scheme().name
-        ]
         self.clear_button.setIcon(
-            SystemIcon.get_icon("trash", icon_theme)
+            _outline_icon(self.clear_button, "trash")
         )
         self.open_folder_button.setIcon(
-            self.style().standardIcon(
-                QStyle.StandardPixmap.SP_DirOpenIcon
-            )
+            _outline_icon(self.open_folder_button, "folder")
+        )
+        self.settings_button.setIcon(
+            _outline_icon(self.settings_button, "settings")
         )
         self.update()
 
@@ -959,3 +1060,7 @@ class DownloadsWindow(QDialog, _DownloadsListMixin):
 
     def _open_downloads_folder(self):
         self._open_downloads_folder_path()
+
+    def _open_download_settings(self):
+        self.close()
+        self.settings_requested.emit()

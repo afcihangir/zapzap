@@ -257,9 +257,12 @@ gráfica real.
 15. Abra o menu de downloads pelos botões da barra lateral e da barra de menu.
     Confirme que ele funciona como um menu suspenso compacto e mostra somente
     os cinco itens mais recentes. Passe o ponteiro sobre uma linha e confirme
-    que as ações daquela linha aparecem à direita. Use o botão inferior para
-    abrir a janela maior de Downloads; confirme que ela continua compacta,
-    mostra um histórico muito maior e permite rolar verticalmente. Teste tema
+    que aparecem à direita os ícones de mostrar na pasta e, para itens
+    concluídos, remover do histórico. O botão inferior deve abrir **Todo o
+    histórico de downloads** em uma janela maior, mas ainda compacta, com
+    rolagem vertical e histórico ampliado. No rodapé dessa janela confirme três
+    controles apenas por ícone: limpar histórico, abrir a pasta de downloads e
+    abrir diretamente as configurações de download. Teste tema
     claro, escuro e automático; ambos devem seguir a paleta Qt sem áreas
     ilegíveis. Em Linux, valide pelo menos uma sessão X11 e uma Wayland quando
     disponíveis.

@@ -41,7 +41,10 @@ releases and the AppStream metadata.
   the sidebar and menubar buttons open a compact dropdown limited to the five
   most recent items, while its footer opens a separate small, vertically
   scrollable history window retaining up to 100 recent/session records.
-  Hovering a row reveals its relevant actions. Active rows show percentage,
+  Hovering a finished row reveals outline-only palette-aware folder and trash
+  actions; the trash removes only the ZapZap history entry, never the downloaded
+  file. The history window footer uses icon-only clear-history, downloads-folder
+  and download-settings shortcuts. Active rows show percentage,
   smoothed current transfer speed and estimated time remaining.
   The download button no longer overlays a percentage; a proportional circular
   progress ring is drawn around the icon only while the estimated remaining time
