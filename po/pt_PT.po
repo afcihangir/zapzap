@@ -5126,3 +5126,15 @@ msgstr "Permissão para várias transferências do WhatsApp"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Limpar a decisão memorizada de permitir ou bloquear transferências repetidas do WhatsApp."
+
+msgid "Automatically open PDFs"
+msgstr "Abrir PDFs automaticamente"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Abrir transferências PDF concluídas com a aplicação predefinida do sistema."
+
+msgid "Automatically open images"
+msgstr "Abrir imagens automaticamente"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Abrir transferências de imagens concluídas com a aplicação predefinida do sistema."
