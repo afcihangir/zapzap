@@ -48,11 +48,13 @@ releases and the AppStream metadata.
   coverage so queueing, path hardening, settings, MIME validation, native file
   presentation and tray interaction behavior are exercised on maintained
   desktop operating systems.
-- Changed the system tray interaction so a primary single click toggles the
-  application window, a primary double click performs the same toggle exactly
-  once, and only a context/right click opens the tray menu. The context menu is
-  opened explicitly instead of being attached directly to the tray icon so
-  double-click activation remains available on macOS.
+- Changed the system tray interaction so a primary single click opens the tray
+  menu, a primary double click toggles the application window exactly once,
+  and a context/right click opens the same menu. Primary-click menu opening is
+  delayed by the system double-click interval so the first click of a double
+  click does not flash the menu. Linux keeps the native context-menu attachment
+  required by StatusNotifier/AppIndicator hosts, while other platforms use
+  explicit activation routing.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
