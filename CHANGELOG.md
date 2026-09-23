@@ -37,13 +37,17 @@ releases and the AppStream metadata.
   safe extension and no conflicting server MIME type. Download names and final
   target paths are sanitized/canonicalized to prevent directory traversal and
   symlink escape.
-- Kept the download menu stable during fast transfers: unstarted requests
+- Refined the download experience with a compact Chrome-style downloads
+  popover shared by the sidebar and menubar buttons. It has a close control,
+  scrollable download rows and palette-driven light/dark styling. Active rows
+  show percentage, smoothed current transfer speed and estimated time remaining.
+  The download button no longer overlays a percentage; a proportional circular
+  progress ring is drawn around the icon only while the estimated remaining time
+  is greater than five seconds, without resizing the button or icon.
+- Kept download presentation stable during fast transfers: unstarted requests
   dismissed from the save dialog no longer appear as cancelled, terminal states
-  retain their original request position, long names are middle-elided while
-  preserving the extension, and the fixed-size download buttons use a spinner
-  for short/small transfers. A percentage appears only after five seconds when
-  the known aggregate size is at least 10 MiB, without resizing the button or
-  icon.
+  retain their original request position, and long names are middle-elided while
+  preserving the extension.
 - Added a Linux/Windows/macOS quality matrix for download and tray regression
   coverage so queueing, path hardening, settings, MIME validation, native file
   presentation and tray interaction behavior are exercised on maintained

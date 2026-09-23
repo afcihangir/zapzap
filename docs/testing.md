@@ -235,7 +235,9 @@ gráfica real.
     que o pedido seguinte volta a perguntar, depois teste **permitir sempre** e
     **bloquear**; por fim use Configurações para limpar a decisão lembrada.
 11. Durante um download, confira o ícone de tipo de arquivo fornecido pelo
-    sistema, a barra de progresso e o percentual. Pause e retome. Force uma
+    sistema, a barra de progresso, o percentual, a velocidade instantânea e a
+    estimativa de tempo restante. A velocidade deve permanecer estável o bastante
+    para leitura, sem saltos extremos a cada atualização. Pause e retome. Force uma
     interrupção de rede e confirme **Interrompido**; quando Qt indicar que o item é
     retomável, **Retomar** deve continuar a mesma solicitação. Cancele outro
     item e confirme o estado visual **Cancelado** sem animação de sucesso.
@@ -248,11 +250,17 @@ gráfica real.
     **Cancelado**. Cancele depois uma transferência realmente iniciada e
     confirme que ela permanece na posição original da lista.
 14. Baixe um arquivo com nome longo e confirme a elisão no meio, mantendo a
-    extensão visível. Em downloads menores que 10 MiB confirme o anel de
-    atividade sem redimensionamento do botão. Em um download conhecido de pelo
-    menos 10 MiB que dure mais de cinco segundos, confirme a troca para a
-    porcentagem sem tremor ou mudança do tamanho externo do botão.
-15. Em Linux, Windows e macOS, baixe pelo menos PDF, imagem, arquivo compactado
+    extensão visível. No botão de downloads não deve aparecer percentual:
+    quando a estimativa restante for superior a cinco segundos, confirme um
+    anel circular proporcional ao progresso ao redor do ícone. Quando restarem
+    cinco segundos ou menos, o anel deve desaparecer sem redimensionar o botão.
+15. Abra o painel de downloads pelos botões da barra lateral e da barra de menu.
+    Confirme a janela compacta, o cabeçalho **Downloads**, o botão de fechar,
+    a rolagem para listas maiores, os controles por item e os atalhos inferiores.
+    Teste tema claro, escuro e automático; o painel deve seguir a paleta Qt sem
+    áreas ilegíveis. Em Linux, valide pelo menos uma sessão X11 e uma Wayland
+    quando disponíveis.
+16. Em Linux, Windows e macOS, baixe pelo menos PDF, imagem, arquivo compactado
     e um tipo genérico. Compare com o gerenciador de arquivos do sistema:
     ZapZap deve usar o ícone nativo do tipo/associação, sem gerar miniatura do
     conteúdo. Para um item ainda em fila, aceite fallback genérico apenas

@@ -21,7 +21,7 @@ from zapzap.features.alerts.external_url import open_external_url
 from zapzap.features.browser.shell.browser_controller import BrowserController
 from zapzap.features.downloads.download_events import download_events
 from zapzap.features.downloads.download_manager import DownloadManager
-from zapzap.features.downloads.ui.downloads_menu import DownloadsMenu
+from zapzap.features.downloads.ui.downloads_menu import DownloadsPopover
 from zapzap.features.settings.shell.settings_controller import SettingsController
 from zapzap.features.shortcuts.controller import ShortcutsController
 from zapzap.ui.components.main_window import MainWindowView
@@ -66,7 +66,7 @@ class DownloadActivityRing(QWidget):
         if self._progress is None:
             return
 
-        side = max(14, min(self.width(), self.height()) - 10)
+        side = max(18, min(self.width(), self.height()) - 4)
         left = (self.width() - side) / 2
         top = (self.height() - side) / 2
         rect = QRectF(left, top, side, side)
@@ -110,8 +110,11 @@ class MainWindowController(MainWindowView):
             webview_factory=webview_factory,
             user_provider=user_provider,
         )
-        self._downloads_menu = DownloadsMenu(self)
+        self._downloads_menu = DownloadsPopover(self)
         self._downloads_menu_generation = 0
+        self._downloads_menu.interacted.connect(
+            self._cancel_auto_downloads_close
+        )
         self._download_progress_badges = {}
         self._download_activity_rings = {}
         self._download_progress_timer = QTimer(self)
@@ -419,26 +422,24 @@ class MainWindowController(MainWindowView):
 
     # === Ações de Menu ===
     def show_downloads_menu(self, anchor, auto_close=False):
-        """Show the shared recent-download menu next to its trigger."""
+        """Show the compact downloads window next to its trigger."""
         self._downloads_menu_generation += 1
         generation = self._downloads_menu_generation
 
-        self._downloads_menu.refresh()
-        hint = self._downloads_menu.sizeHint()
-
-        if anchor is self.btn_menubar_downloads:
-            position = anchor.mapToGlobal(anchor.rect().bottomRight())
-            position.setX(position.x() - hint.width())
-        else:
-            position = anchor.mapToGlobal(anchor.rect().topRight())
-
-        self._downloads_menu.popup(position)
+        self._downloads_menu.popup_for(
+            anchor,
+            below=anchor is self.btn_menubar_downloads,
+            activate=not auto_close,
+        )
 
         if auto_close:
             QTimer.singleShot(
                 5000,
                 lambda: self._close_auto_downloads_menu(generation),
             )
+
+    def _cancel_auto_downloads_close(self):
+        self._downloads_menu_generation += 1
 
     def _close_auto_downloads_menu(self, generation):
         if (
@@ -569,6 +570,7 @@ class MainWindowController(MainWindowView):
         if self.app_settings:
             self.close_settings()
 
+        self._downloads_menu.close()
         self.browser.close_conversations()
 
     def hideEvent(self, event):

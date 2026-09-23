@@ -433,6 +433,19 @@ class DownloadQueueTests(unittest.TestCase):
         self.assertEqual(percent, 90)
         self.assertFalse(show_ring)
 
+    def test_progress_ring_stays_hidden_until_speed_is_known(self):
+        download = FakeDownload(
+            5 * 1024 * 1024,
+            20 * 1024 * 1024,
+            name="warming-up.bin",
+        )
+        self.track(download, sequence=1)
+
+        self.assertEqual(
+            DownloadManager.progress_indicator(),
+            (1, 25, False),
+        )
+
     def test_queued_item_is_exposed_as_queued(self):
         queued = FakeDownload(
             0,
@@ -495,6 +508,22 @@ class DownloadMenuPresentationTests(unittest.TestCase):
         self.assertIn("…", rendered)
         self.assertTrue(rendered.endswith(".pdf"))
         self.assertTrue(rendered.startswith("deneme"))
+
+    def test_transfer_speed_and_eta_are_compact_and_language_neutral(self):
+        self.assertEqual(
+            DownloadRow._format_speed(1024 * 1024),
+            "1.00 MB/s",
+        )
+        self.assertEqual(DownloadRow._format_eta(65), "⏱ 1:05")
+        self.assertEqual(
+            DownloadRow._transfer_details_text(
+                {
+                    "speed_bps": 1024 * 1024,
+                    "eta_seconds": 65,
+                }
+            ),
+            "1.00 MB/s  •  ⏱ 1:05",
+        )
 
 
 class DownloadAutoOpenTypeTests(unittest.TestCase):

@@ -7,24 +7,32 @@ from gettext import gettext as _
 from PyQt6.QtCore import (
     QFileInfo,
     QMimeDatabase,
+    QPoint,
     QSize,
     Qt,
     QTimer,
     QUrl,
     pyqtSignal,
 )
-from PyQt6.QtGui import QAbstractFileIconProvider, QDesktopServices, QIcon
+from PyQt6.QtGui import (
+    QAbstractFileIconProvider,
+    QColor,
+    QDesktopServices,
+    QGuiApplication,
+    QIcon,
+)
 from PyQt6.QtWidgets import (
     QFileIconProvider,
+    QFrame,
+    QGraphicsDropShadowEffect,
     QHBoxLayout,
     QLabel,
-    QMenu,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QStyle,
     QVBoxLayout,
     QWidget,
-    QWidgetAction,
 )
 
 from zapzap.assets.icons.system_icon import SystemIcon
@@ -33,7 +41,7 @@ from zapzap.features.downloads.download_events import download_events
 from zapzap.features.downloads.download_manager import DownloadManager
 
 
-class DownloadRow(QWidget):
+class DownloadRow(QFrame):
     """Chrome-like download row with the platform's native file-type icon."""
 
     open_requested = pyqtSignal(str)
@@ -53,6 +61,7 @@ class DownloadRow(QWidget):
         self.item = dict(item)
         self.key = item.get("key")
         self.path = item.get("path", "")
+        self.setObjectName("DownloadRow")
 
         self.setMinimumWidth(360)
         self.setMaximumWidth(520)
@@ -436,19 +445,194 @@ class DownloadRow(QWidget):
         super().leaveEvent(event)
 
 
-class DownloadsMenu(QMenu):
-    """Shared recent-download menu used by sidebar and menubar buttons."""
+class DownloadsPopover(QFrame):
+    """Compact Chrome-like downloads window shared by both download buttons."""
+
+    interacted = pyqtSignal()
+
+    WIDTH = 440
+    SHADOW_MARGIN = 10
+    MAX_ITEMS_HEIGHT = 330
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setObjectName("downloads_menu")
-        self.aboutToShow.connect(self.refresh)
+        super().__init__(
+            parent,
+            Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint,
+        )
+        self.setObjectName("DownloadsPopover")
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating, True)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setFixedWidth(self.WIDTH)
+
+        self._setup_ui()
+        self._apply_style()
+        self._refresh_theme()
 
         self._refresh_timer = QTimer(self)
         self._refresh_timer.setSingleShot(True)
         self._refresh_timer.setInterval(75)
         self._refresh_timer.timeout.connect(self._refresh_if_visible)
         download_events.items_changed.connect(self._schedule_refresh)
+        ThemeManager.instance().theme_changed.connect(self._refresh_theme)
+
+    def _setup_ui(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(
+            self.SHADOW_MARGIN,
+            self.SHADOW_MARGIN,
+            self.SHADOW_MARGIN,
+            self.SHADOW_MARGIN,
+        )
+
+        self.surface = QFrame(self)
+        self.surface.setObjectName("DownloadsPopoverSurface")
+        outer.addWidget(self.surface)
+
+        shadow = QGraphicsDropShadowEffect(self.surface)
+        shadow.setBlurRadius(28)
+        shadow.setOffset(0, 6)
+        shadow.setColor(QColor(0, 0, 0, 75))
+        self.surface.setGraphicsEffect(shadow)
+
+        layout = QVBoxLayout(self.surface)
+        layout.setContentsMargins(12, 10, 12, 10)
+        layout.setSpacing(8)
+
+        header = QHBoxLayout()
+        header.setContentsMargins(4, 0, 0, 0)
+        header.setSpacing(8)
+
+        self.title_label = QLabel(_("Downloads"), self.surface)
+        title_font = self.title_label.font()
+        title_font.setBold(True)
+        self.title_label.setFont(title_font)
+        header.addWidget(self.title_label)
+        header.addStretch(1)
+
+        self.close_button = QPushButton(self.surface)
+        self.close_button.setObjectName("DownloadsCloseButton")
+        self.close_button.setFlat(True)
+        self.close_button.setFixedSize(QSize(28, 28))
+        self.close_button.setIconSize(QSize(16, 16))
+        self.close_button.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.close_button.clicked.connect(self.close)
+        header.addWidget(self.close_button)
+
+        layout.addLayout(header)
+
+        separator = QFrame(self.surface)
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(separator)
+
+        self.items_scroll = QScrollArea(self.surface)
+        self.items_scroll.setObjectName("DownloadsScroll")
+        self.items_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.items_scroll.setWidgetResizable(True)
+        self.items_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+
+        self.items_widget = QWidget(self.items_scroll)
+        self.items_widget.setObjectName("DownloadsItems")
+        self.items_layout = QVBoxLayout(self.items_widget)
+        self.items_layout.setContentsMargins(0, 0, 0, 0)
+        self.items_layout.setSpacing(2)
+        self.items_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.items_scroll.setWidget(self.items_widget)
+        layout.addWidget(self.items_scroll)
+
+        footer_separator = QFrame(self.surface)
+        footer_separator.setFrameShape(QFrame.Shape.HLine)
+        footer_separator.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(footer_separator)
+
+        footer = QHBoxLayout()
+        footer.setContentsMargins(0, 0, 0, 0)
+        footer.setSpacing(6)
+
+        self.clear_button = QPushButton(
+            _("Clear download history"),
+            self.surface,
+        )
+        self.clear_button.setObjectName("DownloadsFooterButton")
+        self.clear_button.setFlat(True)
+        self.clear_button.clicked.connect(self._clear_history)
+        footer.addWidget(self.clear_button)
+
+        footer.addStretch(1)
+
+        self.open_folder_button = QPushButton(
+            _("Open downloads folder"),
+            self.surface,
+        )
+        self.open_folder_button.setObjectName("DownloadsFooterButton")
+        self.open_folder_button.setFlat(True)
+        self.open_folder_button.clicked.connect(self._open_downloads_folder)
+        footer.addWidget(self.open_folder_button)
+
+        layout.addLayout(footer)
+
+    def _apply_style(self):
+        self.setStyleSheet(
+            """
+            QFrame#DownloadsPopover {
+                background: transparent;
+                border: 0;
+            }
+            QFrame#DownloadsPopoverSurface {
+                background: palette(base);
+                border: 1px solid palette(mid);
+                border-radius: 12px;
+            }
+            QWidget#DownloadsItems,
+            QScrollArea#DownloadsScroll,
+            QScrollArea#DownloadsScroll > QWidget > QWidget {
+                background: transparent;
+                border: 0;
+            }
+            QFrame#DownloadRow {
+                background: transparent;
+                border: 0;
+                border-radius: 8px;
+            }
+            QFrame#DownloadRow:hover {
+                background: palette(alternate-base);
+            }
+            QPushButton#DownloadsCloseButton,
+            QPushButton#DownloadsFooterButton {
+                border: 0;
+                border-radius: 7px;
+                padding: 5px 7px;
+                background: transparent;
+            }
+            QPushButton#DownloadsCloseButton:hover,
+            QPushButton#DownloadsFooterButton:hover {
+                background: palette(alternate-base);
+            }
+            QPushButton#DownloadsFooterButton:disabled {
+                color: palette(placeholder-text);
+            }
+            """
+        )
+
+    def _refresh_theme(self, *_args):
+        self.close_button.setIcon(
+            self.style().standardIcon(
+                QStyle.StandardPixmap.SP_TitleBarCloseButton
+            )
+        )
+        icon_theme = SystemIcon.Type[
+            ThemeManager.get_current_color_scheme().name
+        ]
+        self.clear_button.setIcon(SystemIcon.get_icon("trash", icon_theme))
+        self.open_folder_button.setIcon(
+            self.style().standardIcon(
+                QStyle.StandardPixmap.SP_DirOpenIcon
+            )
+        )
+        self.update()
 
     def _schedule_refresh(self):
         if self.isVisible() and not self._refresh_timer.isActive():
@@ -458,42 +642,91 @@ class DownloadsMenu(QMenu):
         if self.isVisible():
             self.refresh()
 
-    def refresh(self):
-        self.clear()
+    def _clear_rows(self):
+        while self.items_layout.count():
+            item = self.items_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
+    def refresh(self):
+        self._clear_rows()
         items = DownloadManager.download_items()
+
         if items:
             for item in items:
-                action = QWidgetAction(self)
-                row = DownloadRow(item, self)
+                row = DownloadRow(item, self.items_widget)
                 row.open_requested.connect(self._open_file)
                 row.folder_requested.connect(self._open_parent_folder)
-                action.setDefaultWidget(row)
-                self.addAction(action)
+                self.items_layout.addWidget(row)
+            body_height = min(
+                self.MAX_ITEMS_HEIGHT,
+                max(82, len(items) * 76),
+            )
         else:
-            empty = QLabel(_("No recent downloads"), self)
+            empty = QLabel(_("No recent downloads"), self.items_widget)
             empty.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            empty.setContentsMargins(16, 12, 16, 12)
+            empty.setContentsMargins(16, 18, 16, 18)
             empty.setEnabled(False)
-            action = QWidgetAction(self)
-            action.setDefaultWidget(empty)
-            self.addAction(action)
+            self.items_layout.addWidget(empty)
+            body_height = 72
 
-        self.addSeparator()
-
-        clear_action = self.addAction(_("Clear download history"))
-        clear_action.setEnabled(any(not item.get("live") for item in items))
-        icon_theme = SystemIcon.Type[
-            ThemeManager.get_current_color_scheme().name
-        ]
-        clear_action.setIcon(SystemIcon.get_icon("trash", icon_theme))
-        clear_action.triggered.connect(self._clear_history)
-
-        open_folder_action = self.addAction(_("Open downloads folder"))
-        open_folder_action.setIcon(
-            self.style().standardIcon(QStyle.StandardPixmap.SP_DirOpenIcon)
+        self.items_scroll.setFixedHeight(body_height)
+        self.clear_button.setEnabled(
+            any(not item.get("live") for item in items)
         )
-        open_folder_action.triggered.connect(self._open_downloads_folder)
+        self._refresh_theme()
+        self.adjustSize()
+
+    def popup_for(self, anchor, *, below=False, activate=True):
+        self.refresh()
+        self.adjustSize()
+
+        if below:
+            anchor_point = anchor.mapToGlobal(
+                QPoint(anchor.width(), anchor.height() + 4)
+            )
+            target = QPoint(
+                anchor_point.x() - self.width(),
+                anchor_point.y(),
+            )
+        else:
+            anchor_point = anchor.mapToGlobal(
+                QPoint(anchor.width() + 8, 0)
+            )
+            target = QPoint(
+                anchor_point.x(),
+                anchor_point.y() + (anchor.height() - self.height()) // 2,
+            )
+
+        screen = (
+            QGuiApplication.screenAt(
+                anchor.mapToGlobal(anchor.rect().center())
+            )
+            or QGuiApplication.primaryScreen()
+        )
+        if screen is not None:
+            available = screen.availableGeometry()
+            target.setX(
+                min(
+                    max(target.x(), available.left()),
+                    available.right() - self.width() + 1,
+                )
+            )
+            target.setY(
+                min(
+                    max(target.y(), available.top()),
+                    available.bottom() - self.height() + 1,
+                )
+            )
+
+        self.move(target)
+        self.show()
+        self.raise_()
+        if activate:
+            self.activateWindow()
+            self.setFocus(Qt.FocusReason.PopupFocusReason)
+        return True
 
     def _open_file(self, path: str):
         self.close()
@@ -507,11 +740,27 @@ class DownloadsMenu(QMenu):
         QDesktopServices.openUrl(QUrl.fromLocalFile(directory))
 
     def _clear_history(self):
+        self.interacted.emit()
         DownloadManager.clear_recent_downloads()
-        self.close()
+        self.refresh()
 
     def _open_downloads_folder(self):
         self.close()
         QDesktopServices.openUrl(
             QUrl.fromLocalFile(DownloadManager.get_path())
         )
+
+    def enterEvent(self, event):
+        self.interacted.emit()
+        super().enterEvent(event)
+
+    def mousePressEvent(self, event):
+        self.interacted.emit()
+        super().mousePressEvent(event)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.close()
+            event.accept()
+            return
+        super().keyPressEvent(event)
