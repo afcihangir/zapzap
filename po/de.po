@@ -5023,3 +5023,15 @@ msgstr "Berechtigung für mehrere WhatsApp-Downloads"
 
 msgid "Clear the remembered allow or block decision for repeated WhatsApp downloads."
 msgstr "Gespeicherte Zulassungs- oder Blockierungsentscheidung für wiederholte WhatsApp-Downloads löschen."
+
+msgid "Automatically open PDFs"
+msgstr "PDFs automatisch öffnen"
+
+msgid "Open completed PDF downloads with the system default application."
+msgstr "Abgeschlossene PDF-Downloads mit der Standardanwendung des Systems öffnen."
+
+msgid "Automatically open images"
+msgstr "Bilder automatisch öffnen"
+
+msgid "Open completed image downloads with the system default application."
+msgstr "Abgeschlossene Bild-Downloads mit der Standardanwendung des Systems öffnen."
