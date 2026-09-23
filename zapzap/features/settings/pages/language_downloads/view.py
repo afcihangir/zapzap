@@ -59,7 +59,7 @@ class LanguageDownloadSettingsView(SettingsPage):
         behavior_row = SettingsSelectRow(
             _("Download behavior"),
             _("Choose what happens when a download starts."),
-            [],
+            [""],
         )
         self.download_behavior_combo = behavior_row.combo
         self.download_behavior_combo.setMinimumWidth(280)
@@ -90,8 +90,8 @@ class LanguageDownloadSettingsView(SettingsPage):
         self.reset_download_permissions_row = SettingsActionRow(
             _("WhatsApp multiple-download permission"),
             _(
-                "Clear remembered allow or block decisions for sites that "
-                "request multiple downloads."
+                "Clear the remembered allow or block decision for repeated "
+                "WhatsApp downloads."
             ),
             button_text=_("Reset"),
         )
