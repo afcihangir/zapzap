@@ -39,7 +39,14 @@ class DownloadRow(QWidget):
     open_requested = pyqtSignal(str)
     folder_requested = pyqtSignal(str)
 
-    _file_icon_provider = QFileIconProvider()
+    _file_icon_provider = None
+
+    @classmethod
+    def _native_icon_provider(cls):
+        """Create the platform icon provider lazily after Qt is available."""
+        if cls._file_icon_provider is None:
+            cls._file_icon_provider = QFileIconProvider()
+        return cls._file_icon_provider
 
     def __init__(self, item: dict, parent=None):
         super().__init__(parent)
@@ -196,7 +203,7 @@ class DownloadRow(QWidget):
     @classmethod
     def _system_file_icon(cls, path: str, name: str) -> QIcon:
         """Resolve the native file-type icon without generating a preview."""
-        provider = cls._file_icon_provider
+        provider = cls._native_icon_provider()
         candidate = path or name
 
         # Existing files get the exact icon chosen by the host OS/desktop.
