@@ -64,11 +64,11 @@ Nos testes visuais, importe controles básicos de `zapzap.ui.primitives` e
 composições de `zapzap.ui.components`. Imports por caminhos internos de uma
 feature não devem ser usados para alcançar widgets compartilhados.
 
-O workflow `quality.yml` executa `test_download_settings.py` também em
-Ubuntu, Windows e macOS. Essa matriz protege os contratos portáveis do
-gerenciador de downloads; a aparência exata dos ícones nativos ainda exige
-validação gráfica em cada sistema porque o desenho final pertence ao tema ou
-shell do sistema operacional.
+O workflow `quality.yml` executa `test_download_settings.py` e `test_taskbar_badge.py`
+também em Ubuntu, Windows e macOS. Essa matriz protege os contratos portáveis
+do gerenciador de downloads e das ativações da bandeja; a aparência exata dos
+ícones nativos e o comportamento imposto pelo shell ainda exigem validação
+gráfica em cada sistema.
 
 ## Cobertura por módulo
 
@@ -120,7 +120,7 @@ documente o que ele protege.
 | `test_settings_radio_group.py` | divisores do grupo de rádio em `ui.components` |
 | `test_software_video_decoding.py` | presets, flags Chromium de renderização/strict proxy, persistência e ordem do bootstrap |
 | `test_spellcheck_language_picker.py` | migração, seleção múltipla transacional, pesquisa, limite, recentes, menu e perfis WebEngine |
-| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta e compatibilidade com Qt anterior |
+| `test_taskbar_badge.py` | contador nativo, zero, preferência, bandeja oculta, clique simples/duplo, menu apenas no clique de contexto e compatibilidade com Qt anterior |
 | `test_system_startup_settings_ui.py` | semântica de fechamento, diálogo nativo, seleção do backend gráfico, reinício e acessibilidade |
 | `test_unix_signal_shutdown.py` | ponte POSIX, restauração do estado global e `SIGTERM` real chegando a `aboutToQuit` em subprocesso isolado |
 | `test_update_checker.py` | versões, política de builds, respostas/falhas assíncronas, metadados seguros e popover acessível compartilhado entre sidebar e Sobre |
@@ -288,6 +288,19 @@ que o Chromium não cria UDP WebRTC não proxyficado. Desative separadamente o
 WebRTC Shield legado para confirmar que a política nativa não depende do script
 `webrtc_shield.js`. Repita com proxy do sistema e confirme que a UI não promete
 isolamento estrito e que a flag não é aplicada.
+
+## Validação manual da bandeja do sistema
+
+1. Com a janela oculta, clique uma vez com o botão principal no ícone do ZapZap
+   e confirme que a janela é restaurada.
+2. Clique novamente uma vez e confirme que a janela volta para o segundo plano.
+3. Repita com um duplo clique rápido: a janela deve alternar apenas uma vez, sem
+   abrir o menu e sem voltar imediatamente ao estado anterior.
+4. Clique com o botão direito/contexto e confirme que apenas o menu da bandeja
+   aparece; a visibilidade da janela não deve mudar.
+5. Repita em Linux, Windows e macOS. Em Linux, registre qualquer limitação do
+   shell/extensão de bandeja, pois alguns ambientes não expõem todos os motivos
+   de ativação do QSystemTrayIcon.
 
 ## Validação manual do bloqueio do WhatsApp Web
 
