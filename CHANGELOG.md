@@ -48,13 +48,13 @@ releases and the AppStream metadata.
   coverage so queueing, path hardening, settings, MIME validation, native file
   presentation and tray interaction behavior are exercised on maintained
   desktop operating systems.
-- Changed the system tray interaction so a primary single click opens the tray
-  menu, a primary double click toggles the application window exactly once,
-  and a context/right click opens the same menu. Primary-click menu opening is
-  delayed by the system double-click interval so the first click of a double
-  click does not flash the menu. Linux keeps the native context-menu attachment
-  required by StatusNotifier/AppIndicator hosts, while other platforms use
-  explicit activation routing.
+- Changed tray activation to respect each desktop's native contract. On
+  Windows/macOS and tray backends that report primary activation, a primary
+  click toggles the application window and a context/right click opens the
+  menu. Linux StatusNotifier/AppIndicator keeps its native context menu because
+  GNOME-style hosts may consume primary/context clicks themselves; when those
+  hosts emit their Activate event as Qt Trigger or DoubleClick, ZapZap toggles
+  the window without opening a second application-side menu.
 - Show native taskbar/dock unread badges on supported Qt platforms, following
   the existing unread-counter preference. Added regression coverage and
   documented the integration and manual validation.
