@@ -108,6 +108,13 @@ class DownloadRow(QWidget):
         progress_layout.addWidget(self.progress_percent)
         center_layout.addWidget(self.progress_row)
 
+        self.transfer_details = QLabel(center)
+        self.transfer_details.setStyleSheet(
+            "color: palette(placeholder-text);"
+        )
+        self.transfer_details.hide()
+        center_layout.addWidget(self.transfer_details)
+
         self.status_row = QWidget(center)
         status_layout = QHBoxLayout(self.status_row)
         status_layout.setContentsMargins(0, 0, 0, 0)
@@ -322,6 +329,12 @@ class DownloadRow(QWidget):
                 self.progress.setValue(int(percent))
                 self.progress_percent.setText(f"{int(percent)}%")
 
+            details = self._transfer_details_text(item)
+            self.transfer_details.setText(details)
+            self.transfer_details.setVisible(bool(details))
+        else:
+            self.transfer_details.hide()
+
         if not show_progress:
             status_icon = self.style().standardIcon(
                 self._status_standard_icon(status)
@@ -352,6 +365,45 @@ class DownloadRow(QWidget):
                 "interrupted",
             }
         )
+
+    @staticmethod
+    def _format_speed(speed_bps):
+        if speed_bps is None or speed_bps <= 0:
+            return ""
+
+        value = float(speed_bps)
+        units = ("B/s", "KB/s", "MB/s", "GB/s")
+        unit = units[0]
+        for candidate in units:
+            unit = candidate
+            if value < 1024.0 or candidate == units[-1]:
+                break
+            value /= 1024.0
+
+        if value >= 100:
+            return f"{value:.0f} {unit}"
+        if value >= 10:
+            return f"{value:.1f} {unit}"
+        return f"{value:.2f} {unit}"
+
+    @staticmethod
+    def _format_eta(eta_seconds):
+        if eta_seconds is None or eta_seconds < 0:
+            return ""
+
+        seconds = max(0, int(round(eta_seconds)))
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        if hours:
+            return f"⏱ {hours}:{minutes:02d}:{seconds:02d}"
+        return f"⏱ {minutes}:{seconds:02d}"
+
+    @classmethod
+    def _transfer_details_text(cls, item):
+        speed = cls._format_speed(item.get("speed_bps"))
+        eta = cls._format_eta(item.get("eta_seconds"))
+        return "  •  ".join(part for part in (speed, eta) if part)
 
     def _refresh_live_item(self):
         item = DownloadManager.item_snapshot(self.key)

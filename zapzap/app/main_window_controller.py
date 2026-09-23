@@ -31,54 +31,65 @@ from zapzap.ui.components.send_message_to_number_dialog import (
 
 
 class DownloadActivityRing(QWidget):
-    """Small mouse-transparent activity ring drawn around a download icon."""
+    """Mouse-transparent circular progress ring around a download icon."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._angle = 0
+        self._progress = None
         self.setAttribute(
             Qt.WidgetAttribute.WA_TransparentForMouseEvents,
             True,
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
-        self._timer = QTimer(self)
-        self._timer.setInterval(80)
-        self._timer.timeout.connect(self._tick)
         self.hide()
 
-    def _tick(self):
-        self._angle = (self._angle - 20) % 360
-        self.update()
+    def set_progress(self, percent):
+        if percent is None:
+            self.stop()
+            return
 
-    def start(self):
         parent = self.parentWidget()
         if parent is not None:
             self.setGeometry(parent.rect())
-        if not self._timer.isActive():
-            self._timer.start()
+
+        self._progress = max(0, min(100, int(percent)))
         self.show()
         self.raise_()
+        self.update()
 
     def stop(self):
-        self._timer.stop()
+        self._progress = None
         self.hide()
 
     def paintEvent(self, event):
         del event
+        if self._progress is None:
+            return
+
         side = max(14, min(self.width(), self.height()) - 10)
         left = (self.width() - side) / 2
         top = (self.height() - side) / 2
+        rect = QRectF(left, top, side, side)
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        pen = QPen(self.palette().highlight().color())
-        pen.setWidth(2)
-        painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
+
+        track_color = self.palette().mid().color()
+        track_color.setAlpha(90)
+        track_pen = QPen(track_color)
+        track_pen.setWidth(2)
+        painter.setPen(track_pen)
+        painter.drawEllipse(rect)
+
+        progress_pen = QPen(self.palette().highlight().color())
+        progress_pen.setWidth(2)
+        progress_pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(progress_pen)
         painter.drawArc(
-            QRectF(left, top, side, side),
-            self._angle * 16,
-            105 * 16,
+            rect,
+            90 * 16,
+            -round(360 * 16 * (self._progress / 100.0)),
         )
 
 
@@ -328,7 +339,7 @@ class MainWindowController(MainWindowView):
         badge.raise_()
 
     def _refresh_download_progress(self):
-        count, percent, show_percent = DownloadManager.progress_indicator()
+        count, percent, show_ring = DownloadManager.progress_indicator()
 
         if count <= 0:
             self._downloads_were_active = False
@@ -344,22 +355,17 @@ class MainWindowController(MainWindowView):
             badge = self._download_progress_badges.get(button)
             ring = self._download_activity_rings.get(button)
 
-            if ring is not None:
-                ring.setGeometry(button.rect())
-
-            if show_percent and percent is not None:
-                if ring is not None:
-                    ring.stop()
-                if badge is not None:
-                    badge.setText(f"{percent}%")
-                    self._position_download_badge(button, badge)
-                    badge.show()
-                continue
-
             if badge is not None:
                 badge.hide()
-            if ring is not None:
-                ring.start()
+
+            if ring is None:
+                continue
+
+            ring.setGeometry(button.rect())
+            if show_ring and percent is not None:
+                ring.set_progress(percent)
+            else:
+                ring.stop()
 
     def _restore_download_button_icons(self):
         for badge in self._download_progress_badges.values():

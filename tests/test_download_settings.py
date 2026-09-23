@@ -397,54 +397,41 @@ class DownloadQueueTests(unittest.TestCase):
         self.assertEqual(items[1]["name"], "older.bin")
         self.assertEqual(items[1]["status"], "cancelled")
 
-    def test_progress_percent_badge_waits_for_large_slow_download(self):
+    def test_progress_ring_shows_when_estimated_time_exceeds_five_seconds(self):
         download = FakeDownload(
             5 * 1024 * 1024,
             20 * 1024 * 1024,
             name="large.bin",
         )
         self.track(download, sequence=1)
-        DownloadManager._download_meta[id(download)]["started_at"] = (
-            time.monotonic() - 6
-        )
+        meta = DownloadManager._download_meta[id(download)]
+        meta["speed_last_at"] = time.monotonic() - 1
+        meta["speed_last_received"] = 4 * 1024 * 1024
+        meta["speed_bps"] = 1024 * 1024
 
-        count, percent, show_percent = DownloadManager.progress_indicator()
+        count, percent, show_ring = DownloadManager.progress_indicator()
 
         self.assertEqual(count, 1)
         self.assertEqual(percent, 25)
-        self.assertTrue(show_percent)
+        self.assertTrue(show_ring)
 
-    def test_progress_percent_badge_stays_hidden_for_small_or_fast_download(self):
-        small = FakeDownload(
-            1 * 1024 * 1024,
-            5 * 1024 * 1024,
-            name="small.bin",
-        )
-        self.track(small, sequence=1)
-        DownloadManager._download_meta[id(small)]["started_at"] = (
-            time.monotonic() - 10
-        )
-        self.assertEqual(
-            DownloadManager.progress_indicator(),
-            (1, 20, False),
-        )
-
-        DownloadManager._active_downloads = []
-        DownloadManager._download_meta = {}
-
-        fast = FakeDownload(
-            5 * 1024 * 1024,
+    def test_progress_ring_stays_hidden_when_estimated_time_is_short(self):
+        download = FakeDownload(
+            18 * 1024 * 1024,
             20 * 1024 * 1024,
             name="fast.bin",
         )
-        self.track(fast, sequence=2)
-        DownloadManager._download_meta[id(fast)]["started_at"] = (
-            time.monotonic() - 1
-        )
-        self.assertEqual(
-            DownloadManager.progress_indicator(),
-            (1, 25, False),
-        )
+        self.track(download, sequence=1)
+        meta = DownloadManager._download_meta[id(download)]
+        meta["speed_last_at"] = time.monotonic() - 1
+        meta["speed_last_received"] = 17 * 1024 * 1024
+        meta["speed_bps"] = 1024 * 1024
+
+        count, percent, show_ring = DownloadManager.progress_indicator()
+
+        self.assertEqual(count, 1)
+        self.assertEqual(percent, 90)
+        self.assertFalse(show_ring)
 
     def test_queued_item_is_exposed_as_queued(self):
         queued = FakeDownload(
