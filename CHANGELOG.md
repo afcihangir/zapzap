@@ -37,17 +37,21 @@ releases and the AppStream metadata.
   safe extension and no conflicting server MIME type. Download names and final
   target paths are sanitized/canonicalized to prevent directory traversal and
   symlink escape.
-- Refined the download experience with a compact Chrome-style downloads
-  popover shared by the sidebar and menubar buttons. It has a close control,
-  scrollable download rows and palette-driven light/dark styling. Active rows
-  show percentage, smoothed current transfer speed and estimated time remaining.
+- Refined the download experience with a Chrome-style two-level downloads UI:
+  the sidebar and menubar buttons open a compact dropdown limited to the five
+  most recent items, while its footer opens a separate small, vertically
+  scrollable history window retaining up to 100 recent/session records.
+  Hovering a row reveals its relevant actions. Active rows show percentage,
+  smoothed current transfer speed and estimated time remaining.
   The download button no longer overlays a percentage; a proportional circular
   progress ring is drawn around the icon only while the estimated remaining time
   is greater than five seconds, without resizing the button or icon.
 - Kept download presentation stable during fast transfers: unstarted requests
   dismissed from the save dialog no longer appear as cancelled, terminal states
   retain their original request position, and long names are middle-elided while
-  preserving the extension.
+  preserving the extension. PDF, image and other file-type artwork now
+  prefers the current desktop MIME icon theme before falling back to Qt's
+  native generic file provider.
 - Added a Linux/Windows/macOS quality matrix for download and tray regression
   coverage so queueing, path hardening, settings, MIME validation, native file
   presentation and tray interaction behavior are exercised on maintained

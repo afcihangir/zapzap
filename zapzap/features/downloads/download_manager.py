@@ -34,8 +34,8 @@ class DownloadManager:
 
     MAX_ACTIVE_DOWNLOADS = 6
     PROGRESS_RING_MIN_ETA_SECONDS = 5.0
-    MAX_RECENT_DOWNLOADS = 10
-    MAX_SESSION_RECORDS = 10
+    MAX_RECENT_DOWNLOADS = 100
+    MAX_SESSION_RECORDS = 100
 
     _floating_cards = []
     _active_downloads = []

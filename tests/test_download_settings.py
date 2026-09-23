@@ -8,6 +8,7 @@ import unittest
 from unittest.mock import patch
 
 from PyQt6.QtCore import QSettings
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 
 from zapzap.core.config.settings.downloads import (
@@ -21,7 +22,10 @@ from zapzap.features.downloads.download_naming_service import DownloadNamingServ
 from zapzap.features.downloads.ui.multiple_download_dialog import (
     MultipleDownloadDecision,
 )
-from zapzap.features.downloads.ui.downloads_menu import DownloadRow
+from zapzap.features.downloads.ui.downloads_menu import (
+    DownloadRow,
+    DownloadsPopover,
+)
 
 
 class TemporarySettingsTest(unittest.TestCase):
@@ -337,6 +341,7 @@ class DownloadQueueTests(unittest.TestCase):
 
     def test_whatsapp_active_limit_is_global(self):
         self.assertEqual(DownloadManager.MAX_ACTIVE_DOWNLOADS, 6)
+        self.assertGreaterEqual(DownloadManager.MAX_RECENT_DOWNLOADS, 50)
 
         for index in range(6):
             self.track(
@@ -465,6 +470,9 @@ class DownloadQueueTests(unittest.TestCase):
 
 class DownloadMenuPresentationTests(unittest.TestCase):
 
+    def test_compact_popup_shows_five_recent_items(self):
+        self.assertEqual(DownloadsPopover.POPUP_ITEM_LIMIT, 5)
+
     class _FakeIcon:
         def __init__(self, key):
             self.key = key
@@ -490,7 +498,28 @@ class DownloadMenuPresentationTests(unittest.TestCase):
         provider = self._FakeProvider()
         DownloadRow._file_icon_provider = provider
         try:
-            icon = DownloadRow._system_file_icon("", "report.pdf")
+            with patch.object(
+                DownloadRow,
+                "_mime_theme_icon",
+                return_value=self._FakeIcon(3),
+            ):
+                icon = DownloadRow._system_file_icon("", "report.pdf")
+        finally:
+            DownloadRow._file_icon_provider = previous
+
+        self.assertEqual(icon.cacheKey(), 3)
+
+    def test_provider_is_fallback_when_desktop_theme_has_no_mime_icon(self):
+        previous = DownloadRow._file_icon_provider
+        provider = self._FakeProvider()
+        DownloadRow._file_icon_provider = provider
+        try:
+            with patch.object(
+                DownloadRow,
+                "_mime_theme_icon",
+                return_value=QIcon(),
+            ):
+                icon = DownloadRow._system_file_icon("", "report.pdf")
         finally:
             DownloadRow._file_icon_provider = previous
 

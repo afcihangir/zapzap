@@ -254,16 +254,20 @@ gráfica real.
     quando a estimativa restante for superior a cinco segundos, confirme um
     anel circular proporcional ao progresso ao redor do ícone. Quando restarem
     cinco segundos ou menos, o anel deve desaparecer sem redimensionar o botão.
-15. Abra o painel de downloads pelos botões da barra lateral e da barra de menu.
-    Confirme a janela compacta, o cabeçalho **Downloads**, o botão de fechar,
-    a rolagem para listas maiores, os controles por item e os atalhos inferiores.
-    Teste tema claro, escuro e automático; o painel deve seguir a paleta Qt sem
-    áreas ilegíveis. Em Linux, valide pelo menos uma sessão X11 e uma Wayland
-    quando disponíveis.
+15. Abra o menu de downloads pelos botões da barra lateral e da barra de menu.
+    Confirme que ele funciona como um menu suspenso compacto e mostra somente
+    os cinco itens mais recentes. Passe o ponteiro sobre uma linha e confirme
+    que as ações daquela linha aparecem à direita. Use o botão inferior para
+    abrir a janela maior de Downloads; confirme que ela continua compacta,
+    mostra um histórico muito maior e permite rolar verticalmente. Teste tema
+    claro, escuro e automático; ambos devem seguir a paleta Qt sem áreas
+    ilegíveis. Em Linux, valide pelo menos uma sessão X11 e uma Wayland quando
+    disponíveis.
 16. Em Linux, Windows e macOS, baixe pelo menos PDF, imagem, arquivo compactado
     e um tipo genérico. Compare com o gerenciador de arquivos do sistema:
-    ZapZap deve usar o ícone nativo do tipo/associação, sem gerar miniatura do
-    conteúdo. Para um item ainda em fila, aceite fallback genérico apenas
+    ZapZap deve usar primeiro o ícone MIME do tema de ícones do sistema,
+    inclusive para PDF e imagens, sem gerar miniatura do conteúdo. Para um item
+    ainda em fila, aceite fallback genérico apenas
     quando a plataforma não fornecer um ícone específico para a extensão.
 
 ## Validação manual do proxy estrito

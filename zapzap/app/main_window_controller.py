@@ -21,7 +21,10 @@ from zapzap.features.alerts.external_url import open_external_url
 from zapzap.features.browser.shell.browser_controller import BrowserController
 from zapzap.features.downloads.download_events import download_events
 from zapzap.features.downloads.download_manager import DownloadManager
-from zapzap.features.downloads.ui.downloads_menu import DownloadsPopover
+from zapzap.features.downloads.ui.downloads_menu import (
+    DownloadsPopover,
+    DownloadsWindow,
+)
 from zapzap.features.settings.shell.settings_controller import SettingsController
 from zapzap.features.shortcuts.controller import ShortcutsController
 from zapzap.ui.components.main_window import MainWindowView
@@ -111,9 +114,13 @@ class MainWindowController(MainWindowView):
             user_provider=user_provider,
         )
         self._downloads_menu = DownloadsPopover(self)
+        self._downloads_window = DownloadsWindow(self)
         self._downloads_menu_generation = 0
         self._downloads_menu.interacted.connect(
             self._cancel_auto_downloads_close
+        )
+        self._downloads_menu.show_all_requested.connect(
+            self.show_downloads_window
         )
         self._download_progress_badges = {}
         self._download_activity_rings = {}
@@ -448,6 +455,12 @@ class MainWindowController(MainWindowView):
         ):
             self._downloads_menu.close()
 
+    def show_downloads_window(self):
+        """Open the larger scrollable download history window."""
+        self._cancel_auto_downloads_close()
+        self._downloads_menu.close()
+        return self._downloads_window.show_window()
+
     def _downloads_anchor(self):
         return (
             self.btn_menubar_downloads
@@ -571,6 +584,7 @@ class MainWindowController(MainWindowView):
             self.close_settings()
 
         self._downloads_menu.close()
+        self._downloads_window.close()
         self.browser.close_conversations()
 
     def hideEvent(self, event):
