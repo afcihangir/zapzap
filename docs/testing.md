@@ -207,11 +207,11 @@ gráfica real.
    confirme que ele não fecha por temporizador, mas fecha ao clicar fora.
 5. Selecione **perguntar sempre**, faça um download e confirme que o seletor de
    arquivo aparece para cada download e que cancelar não inicia a transferência.
-6. Ative a abertura automática e confirme PDFs e imagens raster válidos no
-   aplicativo padrão do sistema. Renomeie um PDF válido para extensão
-   executável, use conteúdo de texto com extensão de imagem e teste SVG: nenhum
-   deles deve abrir automaticamente. ZIP, texto e outros tipos também devem
-   permanecer fechados.
+6. Teste separadamente **abrir PDFs automaticamente** e **abrir imagens
+   automaticamente**. Com apenas uma opção ativa, o outro tipo deve permanecer
+   fechado. Renomeie um PDF válido para extensão executável, use conteúdo de
+   texto com extensão de imagem e teste SVG: nenhum deles deve abrir
+   automaticamente. ZIP, texto e outros tipos também devem permanecer fechados.
 7. Em cada item do histórico, clique no nome para abrir o arquivo e use o ícone
    de pasta exibido no hover para abrir a pasta. Valide também limpar histórico
    e abrir a pasta de downloads.
@@ -237,6 +237,15 @@ gráfica real.
     caracteres de controle e nomes reservados; o destino final deve permanecer
     dentro da pasta escolhida. Crie também um link simbólico no destino apontando
     para fora e confirme que o alvo é rejeitado.
+13. Feche o diálogo padrão sem salvar e cancele o seletor de destino antes de a
+    transferência começar; nenhum desses pedidos deve aparecer como
+    **İptal edildi**. Cancele depois uma transferência realmente iniciada e
+    confirme que ela permanece na posição original da lista.
+14. Baixe um arquivo com nome longo e confirme a elisão no meio, mantendo a
+    extensão visível. Em downloads menores que 10 MiB confirme o anel de
+    atividade sem redimensionamento do botão. Em um download conhecido de pelo
+    menos 10 MiB que dure mais de cinco segundos, confirme a troca para a
+    porcentagem sem tremor ou mudança do tamanho externo do botão.
 
 ## Validação manual do proxy estrito
 
