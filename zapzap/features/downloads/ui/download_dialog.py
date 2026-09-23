@@ -216,6 +216,16 @@ class DownloadDialog(QDialog):
         self.download = None
         self.reject()
 
+    def _remember_download_directory(self, directory):
+        """Keep the Save As directory only for this conversation session."""
+        owner = self.parent()
+        if owner is None or not hasattr(owner, "last_download_directory"):
+            return
+        try:
+            owner.last_download_directory = directory
+        except RuntimeError:
+            pass
+
     # ===============================
     # Actions
     # ===============================
@@ -296,6 +306,7 @@ class DownloadDialog(QDialog):
                 self.initial_url,
             )
             DownloadManager.start_or_queue(self.download)
+            self._remember_download_directory(os.path.dirname(path))
             self.accept()
         except (RuntimeError, ValueError):
             self._close_unavailable_download()
