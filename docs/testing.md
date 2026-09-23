@@ -64,6 +64,12 @@ Nos testes visuais, importe controles básicos de `zapzap.ui.primitives` e
 composições de `zapzap.ui.components`. Imports por caminhos internos de uma
 feature não devem ser usados para alcançar widgets compartilhados.
 
+O workflow `quality.yml` executa `test_download_settings.py` também em
+Ubuntu, Windows e macOS. Essa matriz protege os contratos portáveis do
+gerenciador de downloads; a aparência exata dos ícones nativos ainda exige
+validação gráfica em cada sistema porque o desenho final pertence ao tema ou
+shell do sistema operacional.
+
 ## Cobertura por módulo
 
 O inventário abaixo descreve a responsabilidade de cada módulo. O bloco de
@@ -87,7 +93,7 @@ documente o que ele protege.
 | `test_dictionary_manager.py` | store próprio, migração, catálogo/cache, rede segura, downloads atômicos, importação/remoção, diálogo compartilhado, provisionamento único do idioma do sistema e ausência de dicionários nos pacotes oficiais |
 | `test_dictionary_options.py` | descoberta dinâmica, nomes amigáveis, ordenação, redimensionamento e fallback de dicionários personalizados |
 | `test_display_backend.py` | seleção automática/forçada do backend Qt, precedência de ambiente/CLI/plataforma e migração da chave Wayland legada |
-| `test_download_settings.py` | modos persistidos, permissão múltipla sem bypass temporal, fila global, ordem/dispensa de itens, indicador compacto, elisão de nomes, sanitização de alvos e abertura separada de PDF/imagens por MIME verificado |
+| `test_download_settings.py` | modos persistidos, permissão múltipla sem bypass temporal, fila global, ordem/dispensa de itens, indicador compacto, ícones nativos de tipo, elisão de nomes, sanitização de alvos e abertura separada de PDF/imagens por MIME verificado |
 | `test_documentation_structure.py` | camadas de UI, ciclo numérico versionado do changelog e sincronização entre árvore, inventários técnicos, convenção de commits e guia para agentes |
 | `test_donations_page.py` | URLs HTTPS oficiais, fallback externo, cartões responsivos/acessíveis, troca imediata de idioma e rota única pela sidebar, Configurações e Sobre |
 | `test_external_link_lifecycle.py` | classificação interna/externa de pop-ups, profile compartilhado, entrega única ao navegador e cleanup no fechamento/shutdown |
