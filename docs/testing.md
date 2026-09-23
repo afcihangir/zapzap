@@ -138,9 +138,9 @@ documente o que ele protege.
 - `test_dictionary_manager.py`
 - `test_dictionary_options.py`
 - `test_display_backend.py`
-- `test_download_settings.py`
 - `test_documentation_structure.py`
 - `test_donations_page.py`
+- `test_download_settings.py`
 - `test_external_link_lifecycle.py`
 - `test_freedesktop_notification_backend.py`
 - `test_gpu_environment.py`
