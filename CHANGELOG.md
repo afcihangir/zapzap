@@ -173,6 +173,9 @@ releases and the AppStream metadata.
 
 ### Changed
 
+- Kept the testing documentation inventory synchronized with the newly added
+  Simplified Chinese translation regression module after the latest upstream
+  merge.
 - Increased the WebEngine integration-test timeout for plain-text paste so
   slower macOS CI startup does not produce a false failure while preserving
   the same real QWebEnginePage behavior check.
