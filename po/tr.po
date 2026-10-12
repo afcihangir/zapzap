@@ -4920,3 +4920,19 @@ msgstr "Klasörde göster"
 #: zapzap/features/downloads/ui/downloads_menu.py
 msgid "Remove from download history"
 msgstr "İndirme geçmişinden kaldır"
+
+#: zapzap/features/settings/pages/language_downloads/view.py
+msgid "PDF file clicks"
+msgstr "PDF dosyasına tıklama"
+
+#: zapzap/features/settings/pages/language_downloads/view.py
+msgid "Choose whether PDF files open in WhatsApp or download when clicked."
+msgstr "PDF dosyasına tıklanınca WhatsApp içinde görüntülenmesini veya indirilmesini seçin."
+
+#: zapzap/features/settings/pages/language_downloads/controller.py
+msgid "Preview in WhatsApp"
+msgstr "WhatsApp içinde görüntüle"
+
+#: zapzap/features/settings/pages/language_downloads/controller.py
+msgid "Download directly"
+msgstr "Doğrudan indir"

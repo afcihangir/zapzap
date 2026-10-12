@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import logging
 
+from PyQt6.QtCore import QObject, pyqtSignal
+
 from zapzap.core.config.settings.base import BaseSettings
 from zapzap.core.config.settings_manager import SettingsManager
 
@@ -21,6 +23,13 @@ class DownloadBehavior:
     VALUES = {DIALOG, AUTOMATIC, ASK_EVERY_TIME}
 
 
+class PDFClickBehavior:
+    """Preference for clicking PDF documents."""
+    PREVIEW = "preview"
+    DOWNLOAD = "download"
+    VALUES = {PREVIEW, DOWNLOAD}
+
+
 class MultipleDownloadPermission:
     """Stable permission values for repeated WhatsApp downloads."""
 
@@ -31,12 +40,20 @@ class MultipleDownloadPermission:
     VALUES = {ASK, ALLOW, BLOCK}
 
 
+class DownloadSettingsEvents(QObject):
+    pdf_click_behavior_changed = pyqtSignal()
+
+
+download_settings_events = DownloadSettingsEvents()
+
+
 class DownloadSettings(BaseSettings):
     """Semantic access to download behavior preferences."""
 
     _BEHAVIOR = ("downloads/behavior", DownloadBehavior.DIALOG)
     _AUTO_OPEN_MEDIA_LEGACY = ("downloads/auto_open_media", False)
     _AUTO_OPEN_PDF = ("downloads/auto_open_pdf", False)
+    _PDF_CLICK_BEHAVIOR = ("downloads/pdf_click_behavior", PDFClickBehavior.PREVIEW)
     _AUTO_OPEN_IMAGES = ("downloads/auto_open_images", False)
     _MULTIPLE_DOWNLOAD_PERMISSION = (
         "downloads/whatsapp_multiple_download_permission",
@@ -66,6 +83,18 @@ class DownloadSettings(BaseSettings):
             else DownloadBehavior.DIALOG
         )
         self._set_str(self._BEHAVIOR, normalized)
+
+    @property
+    def pdf_click_behavior(self) -> str:
+        value = self._get_str(self._PDF_CLICK_BEHAVIOR)
+        return value if value in PDFClickBehavior.VALUES else PDFClickBehavior.PREVIEW
+
+    @pdf_click_behavior.setter
+    def pdf_click_behavior(self, value: str) -> None:
+        normalized = value if value in PDFClickBehavior.VALUES else PDFClickBehavior.PREVIEW
+        if self.pdf_click_behavior != normalized:
+            self._set_str(self._PDF_CLICK_BEHAVIOR, normalized)
+            download_settings_events.pdf_click_behavior_changed.emit()
 
     def _migrate_legacy_auto_open(self) -> None:
         legacy_key, _default = self._AUTO_OPEN_MEDIA_LEGACY

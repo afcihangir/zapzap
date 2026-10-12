@@ -88,8 +88,9 @@ class PlainTextPasteTests(QtTestCase):
             script,
         )
         self.assertIn("editor.focus({preventScroll: true})", script)
-        self.assertIn('document.execCommand("insertText", false, text)', script)
+        self.assertIn('document.execCommand("insertText", false, lines[i])', script)
         self.assertIn('const text = "A\\tB\\n1\\t2";', script)
+        self.assertIn('new ClipboardEvent("paste"', script)
         self.assertNotIn("text/html", script)
         self.assertNotIn("image/", script)
 

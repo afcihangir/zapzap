@@ -27,6 +27,9 @@ from zapzap.features.dictionaries.spellcheck_language_picker import (
     open_spellcheck_language_picker,
 )
 from zapzap.features.downloads.download_manager import DownloadManager
+from zapzap.core.config.settings.downloads import (
+    DownloadSettings, PDFClickBehavior, download_settings_events,
+)
 from zapzap.core.config.settings_manager import SettingsManager
 from zapzap.core.config.settings.system import SystemSettings
 from zapzap.core.config.settings.performance import (
@@ -87,6 +90,9 @@ class WebView(QWebEngineView):
         # In-memory only: last directory chosen with Save As for this
         # conversation. Never persisted.
         self.last_download_directory = None
+        download_settings_events.pdf_click_behavior_changed.connect(
+            self._apply_pdf_click_behavior
+        )
 
         self._reload_timer = QTimer(self)
         self._reload_timer.setSingleShot(True)
@@ -154,11 +160,7 @@ class WebView(QWebEngineView):
         )
         self.profile.settings().setAttribute(
             QWebEngineSettings.WebAttribute.ScrollAnimatorEnabled, SettingsManager.get("web/scroll_animator", False))
-        pdf_viewer_attr = getattr(
-            QWebEngineSettings.WebAttribute, "PdfViewerEnabled", None
-        )
-        if pdf_viewer_attr is not None:
-            self.profile.settings().setAttribute(pdf_viewer_attr, True)
+        self._apply_pdf_click_behavior()
 
         self.configure_spellcheck()
 
@@ -187,6 +189,53 @@ class WebView(QWebEngineView):
         # Instala o handler de crash específico para este WebView
         crash_handler.register_profile(self.profile)
         self._inject_webrtc_shield()
+
+    def _apply_pdf_click_behavior(self):
+        """Synchronize Qt's PDF plugin and WhatsApp's click behavior."""
+        if self.profile is None:
+            return
+        preview = DownloadSettings().pdf_click_behavior == PDFClickBehavior.PREVIEW
+        settings = self.profile.settings()
+        settings.setAttribute(
+            QWebEngineSettings.WebAttribute.PluginsEnabled, preview
+        )
+        pdf_attr = getattr(
+            QWebEngineSettings.WebAttribute, "PdfViewerEnabled", None
+        )
+        if pdf_attr is not None:
+            settings.setAttribute(pdf_attr, preview)
+
+        if self.whatsapp_page is not None and not self._shutting_down:
+            mode = json.dumps(DownloadSettings().pdf_click_behavior)
+            try:
+                self.whatsapp_page.runJavaScript(
+                    "window.__zapzapPdfClicks?.setMode(" + mode + ")"
+                )
+            except RuntimeError:
+                pass
+
+    def _install_pdf_click_controller(self):
+        """Install only a PDF-click listener, not a permanent DOM observer."""
+        path = os.path.join(
+            os.path.dirname(__file__), "scripts", "pdf_click_controller.js"
+        )
+        try:
+            with open(path, encoding="utf-8") as file:
+                source = file.read()
+            script = QWebEngineScript()
+            script.setName("zapzap_pdf_click_controller")
+            script.setInjectionPoint(
+                QWebEngineScript.InjectionPoint.DocumentReady
+            )
+            script.setRunsOnSubFrames(False)
+            script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
+            mode = json.dumps(DownloadSettings().pdf_click_behavior)
+            script.setSourceCode(
+                source.replace("__ZAPZAP_PDF_CLICK_MODE__", mode)
+            )
+            self.profile.scripts().insert(script)
+        except Exception:
+            logger.exception("Failed to install PDF click handling")
 
     def _install_ctrl_arrow_visual_navigation_fix(self):
         if SettingsManager.get("web/ctrl_arrow_visual_navigation_fix", True):
@@ -351,6 +400,7 @@ class WebView(QWebEngineView):
         self.whatsapp_page.setAudioMuted(SystemSettings().audio_muted)
         self.whatsapp_page.renderProcessTerminated.connect(
             self._on_render_crash)
+        self._install_pdf_click_controller()
         self.load_page()
         self._inject_web_theme_controller()
 
@@ -568,9 +618,28 @@ class WebView(QWebEngineView):
     selection.addRange(range);
 
     try {{
-        if (document.execCommand("insertText", false, text)) {{
-            return true;
+        if (editor.hasAttribute("data-lexical-editor")) {{
+            const data = new DataTransfer();
+            data.setData("text/plain", text);
+            const event = new ClipboardEvent("paste", {{
+                clipboardData: data, bubbles: true, cancelable: true
+            }});
+            editor.dispatchEvent(event);
+            if (event.defaultPrevented) return true;
         }}
+
+        const lines = text.split(String.fromCharCode(10));
+        for (let i = 0; i < lines.length; i++) {{
+            if (i > 0) {{
+                if (!document.execCommand("insertLineBreak", false, null))
+                    return false;
+            }}
+            if (lines[i]) {{
+                if (!document.execCommand("insertText", false, lines[i]))
+                    return false;
+            }}
+        }}
+        return true;
     }} catch (_error) {{
         // Fall back to direct range insertion below.
     }}

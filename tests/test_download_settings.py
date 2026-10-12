@@ -14,6 +14,8 @@ from PyQt6.QtWebEngineCore import QWebEngineDownloadRequest
 from zapzap.core.config.settings.downloads import (
     DownloadBehavior,
     DownloadSettings,
+    PDFClickBehavior,
+    download_settings_events,
     MultipleDownloadPermission,
 )
 from zapzap.core.config.settings_manager import SettingsManager
@@ -72,6 +74,39 @@ class DownloadSettingsTests(TemporarySettingsTest):
             SettingsManager.get("downloads/behavior"),
             DownloadBehavior.DIALOG,
         )
+
+    def test_pdf_click_choice_persists_and_emits_on_change(self):
+        changes = []
+        handler = lambda: changes.append(True)
+        download_settings_events.pdf_click_behavior_changed.connect(handler)
+        try:
+            settings = DownloadSettings()
+            self.assertEqual(settings.pdf_click_behavior, PDFClickBehavior.PREVIEW)
+            settings.pdf_click_behavior = PDFClickBehavior.DOWNLOAD
+            self.assertEqual(DownloadSettings().pdf_click_behavior, PDFClickBehavior.DOWNLOAD)
+            settings.pdf_click_behavior = PDFClickBehavior.DOWNLOAD
+            self.assertEqual(len(changes), 1)
+            settings.pdf_click_behavior = "invalid"
+            self.assertEqual(settings.pdf_click_behavior, PDFClickBehavior.PREVIEW)
+            self.assertEqual(len(changes), 2)
+        finally:
+            download_settings_events.pdf_click_behavior_changed.disconnect(handler)
+
+    def test_pdf_click_script_uses_document_ready_main_world(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        from PyQt6.QtWebEngineCore import QWebEngineScript
+        from zapzap.features.browser.web.web_view import WebView
+
+        profile = Mock()
+        WebView._install_pdf_click_controller(SimpleNamespace(profile=profile))
+        script = profile.scripts.return_value.insert.call_args.args[0]
+        self.assertEqual(script.name(), "zapzap_pdf_click_controller")
+        self.assertEqual(
+            script.injectionPoint(), QWebEngineScript.InjectionPoint.DocumentReady
+        )
+        self.assertEqual(script.worldId(), QWebEngineScript.ScriptWorldId.MainWorld)
+        self.assertIn('document.addEventListener("click", onClick, true)', script.sourceCode())
 
     def test_pdf_and_image_auto_open_settings_are_independent(self):
         settings = DownloadSettings()

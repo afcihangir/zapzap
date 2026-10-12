@@ -5,7 +5,7 @@ from gettext import gettext as _
 from PyQt6.QtCore import QLocale
 from PyQt6.QtWidgets import QApplication
 
-from zapzap.core.config.settings.downloads import DownloadBehavior
+from zapzap.core.config.settings.downloads import DownloadBehavior, PDFClickBehavior
 from zapzap.features.dictionaries.dictionary_manager import (
     open_dictionary_manager,
 )
@@ -39,6 +39,7 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
 
         self.download_path.setText(self.model.get_download_path())
         self._load_download_behavior_options()
+        self._load_pdf_click_behavior_options()
         self.auto_open_pdf_row.checkbox.setChecked(
             self.model.auto_open_pdf
         )
@@ -71,6 +72,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         self.download_behavior_combo.currentIndexChanged.connect(
             self._handle_download_behavior
         )
+        self.pdf_click_behavior_combo.currentIndexChanged.connect(
+            self._handle_pdf_click_behavior
+        )
         self.auto_open_pdf_row.checkbox.toggled.connect(
             self._handle_auto_open_pdf
         )
@@ -99,6 +103,15 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
         )
         index = combo.findData(self.model.download_behavior)
         combo.setCurrentIndex(max(0, index))
+        combo.blockSignals(False)
+
+    def _load_pdf_click_behavior_options(self):
+        combo = self.pdf_click_behavior_combo
+        combo.blockSignals(True)
+        combo.clear()
+        combo.addItem(_("Preview in WhatsApp"), PDFClickBehavior.PREVIEW)
+        combo.addItem(_("Download directly"), PDFClickBehavior.DOWNLOAD)
+        combo.setCurrentIndex(max(0, combo.findData(self.model.pdf_click_behavior)))
         combo.blockSignals(False)
 
     def _load_interface_languages(self):
@@ -229,6 +242,9 @@ class LanguageDownloadSettingsController(LanguageDownloadSettingsView):
     def _handle_download_behavior(self, *_args):
         value = self.download_behavior_combo.currentData()
         self.model.download_behavior = value
+
+    def _handle_pdf_click_behavior(self, *_args):
+        self.model.pdf_click_behavior = self.pdf_click_behavior_combo.currentData()
 
     def _handle_auto_open_pdf(self, enabled):
         self.model.auto_open_pdf = enabled
